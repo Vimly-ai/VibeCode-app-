@@ -370,7 +370,6 @@ export const AuthScreen: React.FC = () => {
                   Debug: Show Correct Hashes
                 </Text>
               </Pressable>
-              </View>
             </View>
           </Animated.View>
 
