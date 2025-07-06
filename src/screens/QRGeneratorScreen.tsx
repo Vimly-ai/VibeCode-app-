@@ -235,6 +235,15 @@ export const QRGeneratorScreen: React.FC = () => {
               <Text className="text-yellow-700 text-sm">• Google Charts QR API</Text>
               <Text className="text-yellow-700 text-sm">• Any standard QR generator tool</Text>
             </View>
+            
+            {/* Point Structure */}
+            <View className="mt-4 p-3 bg-yellow-100 rounded-lg">
+              <Text className="text-yellow-800 font-medium mb-2">Point Structure:</Text>
+              <Text className="text-yellow-700 text-sm">🌅 Before 7:45 AM: +2 points (Early Bird)</Text>
+              <Text className="text-yellow-700 text-sm">⏰ 7:45-8:00 AM: +1 point (On Time)</Text>
+              <Text className="text-yellow-700 text-sm">🟨 8:00-9:00 AM: +0 points (Within Window)</Text>
+              <Text className="text-yellow-700 text-sm">🚫 Outside 6:00-9:00 AM: Blocked</Text>
+            </View>
             <Text className="text-yellow-800 mt-3 font-medium">
               💡 {QR_CONFIG.rotationStrategy === 'daily' ? 'Generate a new QR code daily' : 
                    QR_CONFIG.rotationStrategy === 'weekly' ? 'Generate a new QR code every Monday' :

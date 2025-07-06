@@ -59,9 +59,17 @@ export const DemoQRCode: React.FC<DemoQRCodeProps> = ({ visible, onClose, onChec
                   • One scan per day limit
                 </Text>
                 <Text className="text-blue-700 text-sm">
-                  • Secure daily token validation
+                  • Secure weekly token validation
                 </Text>
               </View>
+              
+              <View className="mt-3 pt-3 border-t border-blue-200">
+                <Text className="text-blue-800 font-semibold mb-2">Point System:</Text>
+                <Text className="text-blue-700 text-xs">🌅 Before 7:45 AM: +2 points</Text>
+                <Text className="text-blue-700 text-xs">⏰ 7:45-8:00 AM: +1 point</Text>
+                <Text className="text-blue-700 text-xs">🟨 8:00-9:00 AM: +0 points</Text>
+                <Text className="text-blue-700 text-xs">🚫 Outside window: Blocked</Text>
+              </div>
             </View>
             
             {/* Mock QR Code Visual */}

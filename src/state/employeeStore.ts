@@ -299,9 +299,10 @@ export const useEmployeeStore = create<EmployeeState>()(
         const currentMinute = mstTime.getMinutes();
         const currentTime = currentHour * 60 + currentMinute;
         
-        // MST Time thresholds: 7:45 AM = 465 minutes, 8:00 AM = 480 minutes
+        // MST Time thresholds: 7:45 AM = 465 minutes, 8:00 AM = 480 minutes, 8:05 AM = 485 minutes
         const earlyBirdThreshold = 465; // 7:45 AM MST
         const onTimeThreshold = 480;    // 8:00 AM MST
+        const lateThreshold = 485;      // 8:05 AM MST
         
         let pointsEarned = 0;
         let checkInType: 'ontime' | 'early' | 'late' = 'late';
@@ -313,8 +314,11 @@ export const useEmployeeStore = create<EmployeeState>()(
         } else if (currentTime <= onTimeThreshold) {
           pointsEarned = 1;
           checkInType = 'ontime';
+        } else if (currentTime <= lateThreshold) {
+          pointsEarned = 0; // 8:00-8:05 AM = 0 points
+          checkInType = 'late';
         } else {
-          pointsEarned = 1; // Still within valid window, give 1 point
+          pointsEarned = 0; // 8:05-9:00 AM = 0 points
           checkInType = 'late';
         }
         
@@ -417,7 +421,7 @@ export const useEmployeeStore = create<EmployeeState>()(
         
         const message = checkInType === 'early' ? 'Early Bird! +2 points' : 
                        checkInType === 'ontime' ? 'Perfect timing! +1 point' : 
-                       'Good job checking in! +1 point';
+                       'You made it within the window! +0 points';
         
         const quote = getMotivationalQuote(checkInType);
         
