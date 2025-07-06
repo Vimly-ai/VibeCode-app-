@@ -61,7 +61,7 @@ export const AuthScreen: React.FC = () => {
 
   const handleDemoLogin = async () => {
     setLoading(true);
-    const result = await signIn('admin@company.com');
+    const result = await signIn('admin@demo.com');
     if (!result.success) {
       Alert.alert('Error', result.message);
     }
@@ -93,13 +93,13 @@ export const AuthScreen: React.FC = () => {
             <View className="space-y-4">
               {/* Email Input */}
               <View>
-                <Text className="text-gray-700 font-medium mb-2">Company Email</Text>
+                <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
                 <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
                   <Ionicons name="mail" size={20} color="#9CA3AF" />
                   <TextInput
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="your.email@company.com"
+                    placeholder="your.email@example.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     className="flex-1 ml-3 text-gray-900"
@@ -200,9 +200,9 @@ export const AuthScreen: React.FC = () => {
               <View className="flex-row items-start">
                 <Ionicons name="shield-checkmark" size={20} color="#10B981" />
                 <View className="flex-1 ml-3">
-                  <Text className="font-medium text-gray-900">Company Email Required</Text>
+                  <Text className="font-medium text-gray-900">Valid Email Required</Text>
                   <Text className="text-gray-600 text-sm">
-                    Only employees with company email addresses can join
+                    Use any valid email address to create your account
                   </Text>
                 </View>
               </View>

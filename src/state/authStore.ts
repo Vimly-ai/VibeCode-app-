@@ -38,7 +38,7 @@ export interface AuthState {
 // Demo admin account for testing
 const demoAdmin: User = {
   id: 'admin-001',
-  email: 'admin@company.com',
+  email: 'admin@demo.com',
   name: 'Admin User',
   role: 'admin',
   department: 'Management',
@@ -52,7 +52,7 @@ const demoAdmin: User = {
 const demoUsers: User[] = [
   {
     id: 'user-001',
-    email: 'sarah.johnson@company.com',
+    email: 'sarah.johnson@gmail.com',
     name: 'Sarah Johnson',
     role: 'employee',
     department: 'Engineering',
@@ -64,7 +64,7 @@ const demoUsers: User[] = [
   },
   {
     id: 'user-002',
-    email: 'mike.chen@company.com',
+    email: 'mike.chen@yahoo.com',
     name: 'Mike Chen',
     role: 'employee',
     department: 'Marketing',
@@ -80,7 +80,7 @@ const demoUsers: User[] = [
 const demoPendingUsers: User[] = [
   {
     id: 'pending-001',
-    email: 'john.doe@company.com',
+    email: 'john.doe@outlook.com',
     name: 'John Doe',
     role: 'employee',
     department: 'Sales',
@@ -90,7 +90,7 @@ const demoPendingUsers: User[] = [
   },
   {
     id: 'pending-002',
-    email: 'jane.smith@company.com',
+    email: 'jane.smith@hotmail.com',
     name: 'Jane Smith',
     role: 'employee',
     department: 'HR',
@@ -109,11 +109,6 @@ export const useAuthStore = create<AuthState>()(
       approvedUsers: [demoAdmin, ...demoUsers],
       
       signUp: async (email: string, name: string, department?: string) => {
-        // Validate email domain (company emails only)
-        if (!email.includes('@company.com')) {
-          return { success: false, message: 'Please use your company email address' };
-        }
-        
         // Check if user already exists
         const state = get();
         const existingUser = [...state.approvedUsers, ...state.pendingUsers].find(
