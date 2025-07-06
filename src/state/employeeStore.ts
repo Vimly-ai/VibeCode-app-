@@ -107,11 +107,87 @@ const defaultBadges: Badge[] = [
 
 // Create mock employees for demo purposes
 const createMockEmployees = (): Employee[] => {
+  const now = new Date();
+  
+  // Create realistic check-in data for the past 2 weeks
+  const createMockCheckIns = (employeeId: string, pattern: 'consistent' | 'inconsistent' | 'improving'): CheckIn[] => {
+    const checkIns: CheckIn[] = [];
+    
+    for (let i = 14; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dayOfWeek = date.getDay();
+      
+      // Skip weekends for most employees
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+      
+      let checkInTime: Date;
+      let type: 'early' | 'ontime' | 'late';
+      let points: number;
+      
+      if (pattern === 'consistent') {
+        // Usually early or on time
+        const isEarly = Math.random() > 0.3;
+        if (isEarly) {
+          checkInTime = new Date(date.setHours(7, 30 + Math.random() * 15, 0, 0));
+          type = 'early';
+          points = 2;
+        } else {
+          checkInTime = new Date(date.setHours(7, 45 + Math.random() * 15, 0, 0));
+          type = 'ontime';
+          points = 1;
+        }
+      } else if (pattern === 'inconsistent') {
+        // Mixed patterns, more late on Mondays
+        const isMonday = dayOfWeek === 1;
+        const lateProbability = isMonday ? 0.7 : 0.4;
+        
+        if (Math.random() < lateProbability) {
+          checkInTime = new Date(date.setHours(8, Math.random() * 30, 0, 0));
+          type = 'late';
+          points = 0;
+        } else if (Math.random() > 0.5) {
+          checkInTime = new Date(date.setHours(7, 30 + Math.random() * 20, 0, 0));
+          type = 'early';
+          points = 2;
+        } else {
+          checkInTime = new Date(date.setHours(7, 50 + Math.random() * 10, 0, 0));
+          type = 'ontime';
+          points = 1;
+        }
+      } else { // improving
+        // Gets better over time
+        const improvementFactor = (14 - i) / 14; // 0 to 1
+        if (Math.random() < 0.2 + improvementFactor * 0.6) {
+          checkInTime = new Date(date.setHours(7, 35 + Math.random() * 15, 0, 0));
+          type = 'early';
+          points = 2;
+        } else if (Math.random() < 0.8) {
+          checkInTime = new Date(date.setHours(7, 50 + Math.random() * 10, 0, 0));
+          type = 'ontime';
+          points = 1;
+        } else {
+          checkInTime = new Date(date.setHours(8, Math.random() * 20, 0, 0));
+          type = 'late';
+          points = 0;
+        }
+      }
+      
+      checkIns.push({
+        id: `${employeeId}-${i}`,
+        timestamp: checkInTime.toISOString(),
+        pointsEarned: points,
+        type,
+      });
+    }
+    
+    return checkIns;
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: 'mock-1',
       name: 'Sarah Johnson',
-      email: 'sarah.johnson@company.com',
+      email: 'sarah.johnson@gmail.com',
       totalPoints: 127,
       weeklyPoints: 15,
       monthlyPoints: 45,
@@ -122,13 +198,13 @@ const createMockEmployees = (): Employee[] => {
         { ...defaultBadges[0], unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
         { ...defaultBadges[1], unlockedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
       ],
-      checkIns: [],
+      checkIns: createMockCheckIns('mock-1', 'consistent'),
       rewardsRedeemed: [],
     },
     {
       id: 'mock-2',
       name: 'Mike Chen',
-      email: 'mike.chen@company.com',
+      email: 'mike.chen@yahoo.com',
       totalPoints: 95,
       weeklyPoints: 12,
       monthlyPoints: 38,
@@ -138,13 +214,13 @@ const createMockEmployees = (): Employee[] => {
       badges: [
         { ...defaultBadges[0], unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
       ],
-      checkIns: [],
+      checkIns: createMockCheckIns('mock-2', 'inconsistent'),
       rewardsRedeemed: [],
     },
     {
       id: 'mock-3',
       name: 'Emma Davis',
-      email: 'emma.davis@company.com',
+      email: 'emma.davis@outlook.com',
       totalPoints: 78,
       weeklyPoints: 10,
       monthlyPoints: 28,
@@ -152,7 +228,7 @@ const createMockEmployees = (): Employee[] => {
       currentStreak: 3,
       longestStreak: 7,
       badges: [],
-      checkIns: [],
+      checkIns: createMockCheckIns('mock-3', 'improving'),
       rewardsRedeemed: [],
     },
   ];

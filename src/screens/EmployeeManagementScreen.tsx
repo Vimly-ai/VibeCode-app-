@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, getDay, getHours, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { useAuthStore } from '../state/authStore';
 import { useEmployeeStore } from '../state/employeeStore';
 import { cn } from '../utils/cn';
@@ -86,6 +86,128 @@ export const EmployeeManagementScreen: React.FC = () => {
     );
   };
   
+  const analyzeEmployeeData = (employee: any) => {
+    if (!employee.checkIns || employee.checkIns.length === 0) {
+      return {
+        weeklyPatterns: {},
+        timePatterns: {},
+        insights: ['No check-in data available yet.'],
+        averageCheckInTime: null,
+        consistencyScore: 0,
+        earlyDays: 0,
+        onTimeDays: 0,
+        lateDays: 0
+      };
+    }
+
+    const checkIns = employee.checkIns;
+    const weeklyPatterns: { [key: string]: { early: number; ontime: number; late: number } } = {};
+    const timePatterns: { [key: string]: number } = {};
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    let totalMinutes = 0;
+    let earlyCount = 0;
+    let onTimeCount = 0;
+    let lateCount = 0;
+
+    // Initialize weekly patterns
+    dayNames.forEach(day => {
+      weeklyPatterns[day] = { early: 0, ontime: 0, late: 0 };
+    });
+
+    checkIns.forEach((checkIn: any) => {
+      const date = parseISO(checkIn.timestamp);
+      const dayOfWeek = dayNames[getDay(date)];
+      const hour = getHours(date);
+      const minute = date.getMinutes();
+      const totalMinutesInDay = hour * 60 + minute;
+      
+      totalMinutes += totalMinutesInDay;
+      
+      // Weekly patterns
+      weeklyPatterns[dayOfWeek][checkIn.type]++;
+      
+      // Time patterns (group by hour)
+      const hourKey = `${hour}:00`;
+      timePatterns[hourKey] = (timePatterns[hourKey] || 0) + 1;
+      
+      // Count by type
+      if (checkIn.type === 'early') earlyCount++;
+      else if (checkIn.type === 'ontime') onTimeCount++;
+      else lateCount++;
+    });
+
+    const averageMinutes = totalMinutes / checkIns.length;
+    const averageHour = Math.floor(averageMinutes / 60);
+    const averageMinute = Math.round(averageMinutes % 60);
+    const averageCheckInTime = `${averageHour.toString().padStart(2, '0')}:${averageMinute.toString().padStart(2, '0')}`;
+
+    // Calculate consistency score (percentage of on-time or early)
+    const consistencyScore = Math.round(((earlyCount + onTimeCount) / checkIns.length) * 100);
+
+    // Generate insights
+    const insights = [];
+    
+    // Weekly pattern insights
+    const mostConsistentDay = Object.entries(weeklyPatterns).reduce((best, [day, pattern]) => {
+      const consistency = (pattern.early + pattern.ontime) / Math.max(1, pattern.early + pattern.ontime + pattern.late);
+      const bestConsistency = (best.pattern.early + best.pattern.ontime) / Math.max(1, best.pattern.early + best.pattern.ontime + best.pattern.late);
+      return consistency > bestConsistency ? { day, pattern } : best;
+    }, { day: dayNames[0], pattern: weeklyPatterns[dayNames[0]] });
+
+    const mostProblematicDay = Object.entries(weeklyPatterns).reduce((worst, [day, pattern]) => {
+      const latePercentage = pattern.late / Math.max(1, pattern.early + pattern.ontime + pattern.late);
+      const worstPercentage = worst.pattern.late / Math.max(1, worst.pattern.early + worst.pattern.ontime + worst.pattern.late);
+      return latePercentage > worstPercentage ? { day, pattern } : worst;
+    }, { day: dayNames[0], pattern: weeklyPatterns[dayNames[0]] });
+
+    if (mostConsistentDay.day !== dayNames[0] || (mostConsistentDay.pattern.early + mostConsistentDay.pattern.ontime) > 0) {
+      insights.push(`Most consistent on ${mostConsistentDay.day}s`);
+    }
+
+    if (mostProblematicDay.pattern.late > 0) {
+      insights.push(`Tends to be late on ${mostProblematicDay.day}s`);
+    }
+
+    // Time pattern insights
+    const peakHour = Object.entries(timePatterns).reduce((peak, [hour, count]) => 
+      count > peak.count ? { hour, count } : peak, { hour: '8:00', count: 0 });
+    
+    if (peakHour.count > 1) {
+      insights.push(`Usually checks in around ${peakHour.hour}`);
+    }
+
+    // Performance insights
+    if (consistencyScore >= 90) {
+      insights.push('Excellent attendance consistency');
+    } else if (consistencyScore >= 70) {
+      insights.push('Good attendance with room for improvement');
+    } else if (consistencyScore >= 50) {
+      insights.push('Inconsistent attendance pattern');
+    } else {
+      insights.push('Needs significant improvement in punctuality');
+    }
+
+    if (earlyCount > onTimeCount && earlyCount > lateCount) {
+      insights.push('Frequently arrives early - shows great dedication');
+    }
+
+    if (employee.currentStreak >= 7) {
+      insights.push(`Strong momentum with ${employee.currentStreak} day streak`);
+    }
+
+    return {
+      weeklyPatterns,
+      timePatterns,
+      insights: insights.length > 0 ? insights : ['Analyzing patterns...'],
+      averageCheckInTime,
+      consistencyScore,
+      earlyDays: earlyCount,
+      onTimeDays: onTimeCount,
+      lateDays: lateCount
+    };
+  };
+
   const handleGiveReward = () => {
     if (!rewardPoints || !rewardReason.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -341,38 +463,159 @@ export const EmployeeManagementScreen: React.FC = () => {
             </View>
             
             <ScrollView className="flex-1 p-6">
-              <View className="items-center mb-6">
-                <View className="w-20 h-20 bg-blue-100 rounded-full items-center justify-center mb-4">
-                  <Text className="text-blue-600 font-bold text-2xl">
-                    {selectedEmployee.name.split(' ').map(n => n[0]).join('')}
-                  </Text>
-                </View>
-                <Text className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</Text>
-                <Text className="text-gray-600 mt-1">{selectedEmployee.email}</Text>
-                <Text className="text-gray-500 capitalize">{selectedEmployee.department}</Text>
-              </View>
-              
-              <View className="bg-gray-50 rounded-xl p-4 mb-6">
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-gray-700">Total Points</Text>
-                  <Text className="font-bold text-2xl text-blue-600">{selectedEmployee.totalPoints}</Text>
-                </View>
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-gray-700">Current Streak</Text>
-                  <Text className="font-semibold text-orange-600">{selectedEmployee.currentStreak} days</Text>
-                </View>
-                <View className="flex-row justify-between items-center">
-                  <Text className="text-gray-700">Total Check-ins</Text>
-                  <Text className="font-semibold text-green-600">{selectedEmployee.checkIns.length}</Text>
-                </View>
-              </View>
-              
-              <Pressable
-                onPress={() => setShowRewardModal(true)}
-                className="bg-blue-600 py-4 rounded-xl mb-4"
-              >
-                <Text className="text-white text-center font-semibold text-lg">Award Bonus Points</Text>
-              </Pressable>
+              {(() => {
+                const analysis = analyzeEmployeeData(selectedEmployee);
+                return (
+                  <>
+                    {/* Employee Header */}
+                    <View className="items-center mb-6">
+                      <View className="w-20 h-20 bg-blue-100 rounded-full items-center justify-center mb-4">
+                        <Text className="text-blue-600 font-bold text-2xl">
+                          {selectedEmployee.name.split(' ').map(n => n[0]).join('')}
+                        </Text>
+                      </View>
+                      <Text className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</Text>
+                      <Text className="text-gray-600 mt-1">{selectedEmployee.email}</Text>
+                      <Text className="text-gray-500 capitalize">{selectedEmployee.department}</Text>
+                    </View>
+                    
+                    {/* Quick Stats */}
+                    <View className="bg-gray-50 rounded-xl p-4 mb-6">
+                      <View className="flex-row justify-between items-center mb-3">
+                        <Text className="text-gray-700">Total Points</Text>
+                        <Text className="font-bold text-2xl text-blue-600">{selectedEmployee.totalPoints}</Text>
+                      </View>
+                      <View className="flex-row justify-between items-center mb-3">
+                        <Text className="text-gray-700">Current Streak</Text>
+                        <Text className="font-semibold text-orange-600">{selectedEmployee.currentStreak} days</Text>
+                      </View>
+                      <View className="flex-row justify-between items-center mb-3">
+                        <Text className="text-gray-700">Total Check-ins</Text>
+                        <Text className="font-semibold text-green-600">{selectedEmployee.checkIns.length}</Text>
+                      </View>
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-gray-700">Consistency Score</Text>
+                        <Text className={cn(
+                          "font-semibold",
+                          analysis.consistencyScore >= 80 ? "text-green-600" :
+                          analysis.consistencyScore >= 60 ? "text-yellow-600" : "text-red-600"
+                        )}>
+                          {analysis.consistencyScore}%
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Attendance Breakdown */}
+                    <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+                      <Text className="text-lg font-semibold text-gray-900 mb-4">Attendance Breakdown</Text>
+                      <View className="space-y-3">
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center">
+                            <View className="w-4 h-4 bg-green-500 rounded-full mr-3" />
+                            <Text className="text-gray-700">Early Arrivals</Text>
+                          </View>
+                          <Text className="font-semibold text-gray-900">{analysis.earlyDays}</Text>
+                        </View>
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center">
+                            <View className="w-4 h-4 bg-blue-500 rounded-full mr-3" />
+                            <Text className="text-gray-700">On Time</Text>
+                          </View>
+                          <Text className="font-semibold text-gray-900">{analysis.onTimeDays}</Text>
+                        </View>
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center">
+                            <View className="w-4 h-4 bg-red-500 rounded-full mr-3" />
+                            <Text className="text-gray-700">Late Arrivals</Text>
+                          </View>
+                          <Text className="font-semibold text-gray-900">{analysis.lateDays}</Text>
+                        </View>
+                        {analysis.averageCheckInTime && (
+                          <View className="flex-row items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                            <Text className="text-gray-700">Average Check-in Time</Text>
+                            <Text className="font-semibold text-gray-900">{analysis.averageCheckInTime}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Weekly Patterns */}
+                    <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+                      <Text className="text-lg font-semibold text-gray-900 mb-4">Weekly Patterns</Text>
+                      <View className="space-y-3">
+                        {Object.entries(analysis.weeklyPatterns).map(([day, pattern]) => {
+                          const total = pattern.early + pattern.ontime + pattern.late;
+                          if (total === 0) return null;
+                          
+                          return (
+                            <View key={day} className="space-y-2">
+                              <View className="flex-row justify-between items-center">
+                                <Text className="font-medium text-gray-900">{day}</Text>
+                                <Text className="text-sm text-gray-600">{total} check-ins</Text>
+                              </View>
+                              <View className="flex-row h-2 bg-gray-200 rounded-full overflow-hidden">
+                                {pattern.early > 0 && (
+                                  <View 
+                                    className="bg-green-500"
+                                    style={{ flex: pattern.early }}
+                                  />
+                                )}
+                                {pattern.ontime > 0 && (
+                                  <View 
+                                    className="bg-blue-500"
+                                    style={{ flex: pattern.ontime }}
+                                  />
+                                )}
+                                {pattern.late > 0 && (
+                                  <View 
+                                    className="bg-red-500"
+                                    style={{ flex: pattern.late }}
+                                  />
+                                )}
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+
+                    {/* AI Insights */}
+                    <View className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+                      <View className="flex-row items-center mb-3">
+                        <Ionicons name="analytics" size={20} color="#3B82F6" />
+                        <Text className="text-lg font-semibold text-blue-900 ml-2">Employee Insights</Text>
+                      </View>
+                      <View className="space-y-2">
+                        {analysis.insights.map((insight, index) => (
+                          <View key={index} className="flex-row items-start">
+                            <View className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3" />
+                            <Text className="text-blue-800 flex-1">{insight}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                    
+                    {/* Action Buttons */}
+                    <View className="space-y-3">
+                      <Pressable
+                        onPress={() => setShowRewardModal(true)}
+                        className="bg-blue-600 py-4 rounded-xl"
+                      >
+                        <Text className="text-white text-center font-semibold text-lg">Award Bonus Points</Text>
+                      </Pressable>
+                      
+                      {analysis.consistencyScore < 70 && (
+                        <Pressable
+                          onPress={() => Alert.alert('Improvement Plan', 'Consider scheduling a one-on-one meeting to discuss attendance patterns and provide support.')}
+                          className="bg-yellow-600 py-4 rounded-xl"
+                        >
+                          <Text className="text-white text-center font-semibold text-lg">Create Improvement Plan</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  </>
+                );
+              })()}
             </ScrollView>
           </View>
         )}
