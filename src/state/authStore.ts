@@ -196,6 +196,7 @@ export const useAuthStore = create<AuthState>()(
         
         // Verify password
         const passwordHash = await hashPassword(password);
+        console.log('Login attempt:', { email, password, generatedHash: passwordHash, storedHash: user.passwordHash });
         if (user.passwordHash !== passwordHash) {
           return { 
             success: false, 

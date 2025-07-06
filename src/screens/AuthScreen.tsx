@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
 import { cn } from '../utils/cn';
+import * as Crypto from 'expo-crypto';
 
 export const AuthScreen: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -158,6 +159,24 @@ export const AuthScreen: React.FC = () => {
       Alert.alert('Error', result.message);
     }
     setLoading(false);
+  };
+
+  const debugHashes = async () => {
+    try {
+      const adminHash = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        'admin123' + 'reward_app_salt',
+        { encoding: Crypto.CryptoEncoding.HEX }
+      );
+      const demoHash = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        'demo123' + 'reward_app_salt',
+        { encoding: Crypto.CryptoEncoding.HEX }
+      );
+      Alert.alert('Debug Hashes', `Admin: ${adminHash}\nDemo: ${demoHash}`);
+    } catch (error) {
+      Alert.alert('Error', 'Could not generate hashes: ' + error.message);
+    }
   };
 
   return (
@@ -342,6 +361,15 @@ export const AuthScreen: React.FC = () => {
                     {loading ? 'Loading...' : 'Employee Login'}
                   </Text>
                 </Pressable>
+              </View>
+              <Pressable
+                onPress={debugHashes}
+                className="bg-red-600 px-4 py-3 rounded-full mt-3"
+              >
+                <Text className="text-white font-semibold text-center">
+                  Debug: Show Correct Hashes
+                </Text>
+              </Pressable>
               </View>
             </View>
           </Animated.View>
