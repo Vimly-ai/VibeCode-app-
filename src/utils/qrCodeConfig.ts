@@ -19,9 +19,12 @@ export const QR_CONFIG: QRCodeConfig = {
     end: '09:00'
   },
   timezone: 'America/Denver', // Mountain Standard Time
-  rotationStrategy: 'weekly', // Change to 'daily', 'weekly', 'monthly', or 'manual'
-  expirationDays: 7 // QR codes expire after 7 days (adjust based on rotation strategy)
+  rotationStrategy: 'manual', // Admin decides when to rotate codes
+  expirationDays: 365 // QR codes valid until manually changed
 };
+
+// Manual QR Code Version - Change this number when you want to invalidate old QR codes
+export const MANUAL_QR_VERSION = 1; // Increment this (1, 2, 3, etc.) to create new QR codes
 
 // Generate QR code URL based on rotation strategy
 export const generateQRCode = (): string => {
@@ -42,8 +45,8 @@ export const generateQRCode = (): string => {
       periodString = `month-${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
       break;
     case 'manual':
-      // For manual rotation, use a static identifier that admin can change
-      periodString = 'manual-v1'; // Admin would manually increment this
+      // For manual rotation, use a version that admin can manually update
+      periodString = `manual-v${MANUAL_QR_VERSION}`;
       break;
     default:
       periodString = today.toISOString().split('T')[0];

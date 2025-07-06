@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
-import { getQRCodeData, isWithinValidTimeWindow, QR_CONFIG, ROTATION_STRATEGIES } from '../utils/qrCodeConfig';
+import { getQRCodeData, isWithinValidTimeWindow, QR_CONFIG, ROTATION_STRATEGIES, MANUAL_QR_VERSION } from '../utils/qrCodeConfig';
 
 export const QRGeneratorScreen: React.FC = () => {
   const [qrGenerated, setQrGenerated] = useState(false);
@@ -93,16 +93,20 @@ export const QRGeneratorScreen: React.FC = () => {
             
             <View className="space-y-3 mb-6">
               <View className="flex-row justify-between">
+                <Text className="text-gray-600">QR Code Version:</Text>
+                <Text className="font-semibold text-blue-600">v{MANUAL_QR_VERSION}</Text>
+              </View>
+              <View className="flex-row justify-between">
                 <Text className="text-gray-600">Valid Period:</Text>
                 <Text className="font-semibold text-gray-900">{qrData.displayInfo.validPeriod}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Rotation:</Text>
-                <Text className="font-semibold text-blue-600 capitalize">{qrData.displayInfo.rotationStrategy}</Text>
+                <Text className="font-semibold text-green-600 capitalize">{qrData.displayInfo.rotationStrategy}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Expires:</Text>
-                <Text className="font-semibold text-orange-600">{qrData.displayInfo.expirationInfo}</Text>
+                <Text className="font-semibold text-green-600">{qrData.displayInfo.expirationInfo}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Time Window:</Text>
@@ -219,8 +223,40 @@ export const QRGeneratorScreen: React.FC = () => {
           </View>
         </Animated.View>
 
-        {/* Generate Instructions */}
+        {/* Manual QR Code Control */}
         <Animated.View entering={FadeInDown.delay(600)} className="px-6 mb-6">
+          <View className="bg-green-50 border border-green-200 rounded-2xl p-6">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="settings" size={24} color="#10B981" />
+              <Text className="text-lg font-semibold text-green-800 ml-2">Manual QR Control</Text>
+            </View>
+            <Text className="text-green-800 mb-4">
+              You have full control! This QR code will work until you decide to change it.
+            </Text>
+            
+            <View className="bg-green-100 p-4 rounded-lg mb-4">
+              <Text className="text-green-800 font-medium mb-2">Current QR Code: Version {MANUAL_QR_VERSION}</Text>
+              <Text className="text-green-700 text-sm">• Valid indefinitely until you change it</Text>
+              <Text className="text-green-700 text-sm">• Time window still enforced daily (6:00-9:00 AM)</Text>
+              <Text className="text-green-700 text-sm">• One scan per employee per day</Text>
+            </View>
+            
+            <View className="bg-white p-4 rounded-lg border border-green-200">
+              <Text className="text-green-800 font-medium mb-2">🔄 To Create a New QR Code:</Text>
+              <Text className="text-green-700 text-sm mb-1">1. Go to: <Text className="font-mono">/src/utils/qrCodeConfig.ts</Text></Text>
+              <Text className="text-green-700 text-sm mb-1">2. Find: <Text className="font-mono">MANUAL_QR_VERSION = {MANUAL_QR_VERSION}</Text></Text>
+              <Text className="text-green-700 text-sm mb-1">3. Change to: <Text className="font-mono">MANUAL_QR_VERSION = {MANUAL_QR_VERSION + 1}</Text></Text>
+              <Text className="text-green-700 text-sm">4. Generate new QR code with updated URL</Text>
+            </View>
+            
+            <Text className="text-green-800 mt-3 font-medium">
+              💡 Only change the version when you want to invalidate old QR codes (security concerns, lost access, etc.)
+            </Text>
+          </View>
+        </Animated.View>
+
+        {/* Generate Instructions */}
+        <Animated.View entering={FadeInDown.delay(700)} className="px-6 mb-6">
           <View className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
             <View className="flex-row items-center mb-3">
               <Ionicons name="construct" size={24} color="#F59E0B" />
@@ -244,12 +280,6 @@ export const QRGeneratorScreen: React.FC = () => {
               <Text className="text-yellow-700 text-sm">🟨 8:00-9:00 AM: +0 points (Within Window)</Text>
               <Text className="text-yellow-700 text-sm">🚫 Outside 6:00-9:00 AM: Blocked</Text>
             </View>
-            <Text className="text-yellow-800 mt-3 font-medium">
-              💡 {QR_CONFIG.rotationStrategy === 'daily' ? 'Generate a new QR code daily' : 
-                   QR_CONFIG.rotationStrategy === 'weekly' ? 'Generate a new QR code every Monday' :
-                   QR_CONFIG.rotationStrategy === 'monthly' ? 'Generate a new QR code monthly' :
-                   'Generate QR codes as needed'} using the current URL!
-            </Text>
           </View>
         </Animated.View>
         
