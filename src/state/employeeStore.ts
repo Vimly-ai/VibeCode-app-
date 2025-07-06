@@ -95,17 +95,22 @@ const defaultRewards: Reward[] = [
   // Weekly (5-10 pts)
   { id: 'w1', name: '$5 Maverick Card', description: 'Fuel up with a $5 Maverick gift card', pointsCost: 5, category: 'weekly', icon: 'card', available: true },
   { id: 'w2', name: 'Extra Break', description: 'Take an extra break during your shift', pointsCost: 8, category: 'weekly', icon: 'time', available: true },
+  { id: 'w3', name: 'Coffee Voucher', description: 'Free coffee from the company cafe', pointsCost: 3, category: 'weekly', icon: 'cafe', available: true },
   
   // Monthly (25-50 pts)
   { id: 'm1', name: '$25 Gift Card', description: 'Choose from popular retailers', pointsCost: 25, category: 'monthly', icon: 'gift', available: true },
+  { id: 'm2', name: 'Team Lunch', description: 'Lunch with your team on the company', pointsCost: 35, category: 'monthly', icon: 'restaurant', available: true },
+  { id: 'm3', name: 'Parking Spot', description: 'Reserved parking spot for a month', pointsCost: 40, category: 'monthly', icon: 'car', available: true },
   
   // Quarterly (75-150 pts)
   { id: 'q1', name: '$100 Gift Card', description: 'High-value gift card of your choice', pointsCost: 75, category: 'quarterly', icon: 'gift', available: true },
   { id: 'q2', name: 'Half-Day Off', description: 'Take a half day off with pay', pointsCost: 100, category: 'quarterly', icon: 'calendar', available: true },
+  { id: 'q3', name: 'Tech Gadget', description: 'Choose from latest tech accessories', pointsCost: 120, category: 'quarterly', icon: 'phone-portrait', available: true },
   
   // Annual (300+ pts)
   { id: 'a1', name: 'Paid Trip', description: 'Paid trip to a destination of your choice', pointsCost: 300, category: 'annual', icon: 'airplane', available: true },
   { id: 'a2', name: 'Vacation Day', description: 'Additional paid vacation day', pointsCost: 350, category: 'annual', icon: 'calendar', available: true },
+  { id: 'a3', name: 'Professional Course', description: 'Enroll in any professional development course', pointsCost: 400, category: 'annual', icon: 'school', available: true },
 ];
 
 const defaultBadges: Badge[] = [
@@ -219,7 +224,24 @@ const createMockEmployees = (): Employee[] => {
           awardedBy: 'Admin'
         }
       ],
-      rewardsRedeemed: [],
+      rewardsRedeemed: [
+        {
+          id: 'redemption-1',
+          rewardId: 'w1',
+          rewardName: '$5 Maverick Card',
+          pointsCost: 5,
+          redeemedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'pending'
+        },
+        {
+          id: 'redemption-2',
+          rewardId: 'w2',
+          rewardName: 'Extra Break',
+          pointsCost: 8,
+          redeemedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'approved'
+        }
+      ],
     },
     {
       id: 'mock-2',
@@ -519,7 +541,7 @@ export const useEmployeeStore = create<EmployeeState>()(
             employees[employeeIndex] = {
               ...employees[employeeIndex],
               totalPoints: employees[employeeIndex].totalPoints - reward.pointsCost,
-              rewardsRedeemed: [...employees[employeeIndex].rewardsRedeemed, redemption],
+              rewardsRedeemed: [...(employees[employeeIndex].rewardsRedeemed || []), redemption],
             };
           }
           
@@ -539,11 +561,11 @@ export const useEmployeeStore = create<EmployeeState>()(
           let updated = false;
           
           for (let i = 0; i < employees.length; i++) {
-            const redemptionIndex = employees[i].rewardsRedeemed.findIndex(r => r.id === redemptionId);
+            const redemptionIndex = (employees[i].rewardsRedeemed || []).findIndex(r => r.id === redemptionId);
             if (redemptionIndex !== -1) {
               employees[i] = {
                 ...employees[i],
-                rewardsRedeemed: employees[i].rewardsRedeemed.map(reward =>
+                rewardsRedeemed: (employees[i].rewardsRedeemed || []).map(reward =>
                   reward.id === redemptionId ? { ...reward, status: 'approved' as const } : reward
                 )
               };
@@ -564,13 +586,13 @@ export const useEmployeeStore = create<EmployeeState>()(
           let updated = false;
           
           for (let i = 0; i < employees.length; i++) {
-            const redemptionIndex = employees[i].rewardsRedeemed.findIndex(r => r.id === redemptionId);
+            const redemptionIndex = (employees[i].rewardsRedeemed || []).findIndex(r => r.id === redemptionId);
             if (redemptionIndex !== -1) {
-              const reward = employees[i].rewardsRedeemed[redemptionIndex];
+              const reward = (employees[i].rewardsRedeemed || [])[redemptionIndex];
               employees[i] = {
                 ...employees[i],
                 totalPoints: employees[i].totalPoints + reward.pointsCost, // Refund points
-                rewardsRedeemed: employees[i].rewardsRedeemed.map(r =>
+                rewardsRedeemed: (employees[i].rewardsRedeemed || []).map(r =>
                   r.id === redemptionId ? { ...r, status: 'rejected' as const } : r
                 )
               };

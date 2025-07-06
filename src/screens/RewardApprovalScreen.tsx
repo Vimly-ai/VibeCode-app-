@@ -19,7 +19,7 @@ export const RewardApprovalScreen: React.FC = () => {
   
   // Get all reward redemptions across all employees
   const allRedemptions = employees.flatMap(emp => 
-    emp.rewardsRedeemed.map(reward => ({
+    (emp.rewardsRedeemed || []).map(reward => ({
       ...reward,
       employeeId: emp.id,
       employeeName: emp.name,

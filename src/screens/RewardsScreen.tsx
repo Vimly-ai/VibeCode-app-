@@ -57,6 +57,9 @@ export const RewardsScreen: React.FC = () => {
       'restaurant': 'restaurant',
       'airplane': 'airplane',
       'star': 'star',
+      'cafe': 'cafe',
+      'phone-portrait': 'phone-portrait',
+      'school': 'school',
     };
     return iconMap[iconName] || 'gift';
   };
