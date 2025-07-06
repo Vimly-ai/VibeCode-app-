@@ -230,7 +230,7 @@ export const RewardApprovalScreen: React.FC = () => {
                         </Text>
                       </View>
                     </View>
-                  </div>
+                  </View>
                 </View>
               </View>
               
