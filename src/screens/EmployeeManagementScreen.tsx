@@ -442,9 +442,9 @@ export const EmployeeManagementScreen: React.FC = () => {
             <View className="bg-white rounded-xl p-6 shadow-sm">
               <Text className="text-lg font-semibold text-gray-900 mb-4">⚠️ Areas Needing Attention</Text>
               <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Employees with Low Consistency (&lt;70%)</Text>
-                  <Text className="font-semibold text-red-600">
+                <View className="flex-row items-start justify-between">
+                  <Text className="text-gray-700 flex-1 mr-3">Employees with Low Consistency (&lt;70%)</Text>
+                  <Text className="font-semibold text-red-600 text-right">
                     {employeesWithData.filter(emp => {
                       const totalCheckins = emp.checkIns.length;
                       const goodCheckins = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
@@ -452,15 +452,15 @@ export const EmployeeManagementScreen: React.FC = () => {
                     }).length} employees
                   </Text>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Lost Streaks This Week</Text>
-                  <Text className="font-semibold text-yellow-600">
+                <View className="flex-row items-start justify-between">
+                  <Text className="text-gray-700 flex-1 mr-3">Lost Streaks This Week</Text>
+                  <Text className="font-semibold text-yellow-600 text-right">
                     {employeesWithData.filter(emp => emp.longestStreak > emp.currentStreak + 3).length} employees
                   </Text>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">No Check-ins Last 3 Days</Text>
-                  <Text className="font-semibold text-red-600">
+                <View className="flex-row items-start justify-between">
+                  <Text className="text-gray-700 flex-1 mr-3">No Check-ins Last 3 Days</Text>
+                  <Text className="font-semibold text-red-600 text-right">
                     {employeesWithData.filter(emp => {
                       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
                       return !emp.checkIns.some(ci => parseISO(ci.timestamp) > threeDaysAgo);
