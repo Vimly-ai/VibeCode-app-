@@ -7,6 +7,7 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
 import { useEmployeeStore } from '../state/employeeStore';
 import { format, parseISO, subDays, subWeeks, subMonths } from 'date-fns';
+import { Alert } from 'react-native';
 import { cn } from '../utils/cn';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -14,7 +15,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export const AdminDashboardScreen: React.FC = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
   const { currentUser, getAllUsers, getPendingUsers } = useAuthStore();
-  const { employees, getLeaderboard } = useEmployeeStore();
+  const { employees, getLeaderboard, approveRewardRedemption } = useEmployeeStore();
   
   const allUsers = getAllUsers();
   const pendingUsers = getPendingUsers();
@@ -43,6 +44,27 @@ export const AdminDashboardScreen: React.FC = () => {
     { key: 'month', label: 'This Month' },
     { key: 'quarter', label: 'This Quarter' },
   ];
+  
+  const handleApproveReward = (rewardId: string) => {
+    Alert.alert(
+      'Approve Reward',
+      'Are you sure you want to approve this reward redemption?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Approve',
+          onPress: () => {
+            const success = approveRewardRedemption(rewardId);
+            if (success) {
+              Alert.alert('Success', 'Reward approved successfully!');
+            } else {
+              Alert.alert('Error', 'Failed to approve reward');
+            }
+          }
+        }
+      ]
+    );
+  };
   
   if (currentUser?.role !== 'admin') {
     return (
@@ -140,8 +162,8 @@ export const AdminDashboardScreen: React.FC = () => {
         
         {/* Analytics Cards */}
         <View className="px-6 mb-6">
-          <View className="grid grid-cols-2 gap-4">
-            <Animated.View entering={FadeInDown.delay(300)} className="bg-white p-5 rounded-xl shadow-sm">
+          <View className="flex-row space-x-4">
+            <Animated.View entering={FadeInDown.delay(300)} className="flex-1 bg-white p-5 rounded-xl shadow-sm">
               <View className="items-center">
                 <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center mb-3">
                   <Ionicons name="diamond" size={24} color="#10B981" />
@@ -151,7 +173,7 @@ export const AdminDashboardScreen: React.FC = () => {
               </View>
             </Animated.View>
             
-            <Animated.View entering={FadeInDown.delay(400)} className="bg-white p-5 rounded-xl shadow-sm">
+            <Animated.View entering={FadeInDown.delay(400)} className="flex-1 bg-white p-5 rounded-xl shadow-sm">
               <View className="items-center">
                 <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mb-3">
                   <Ionicons name="checkmark-circle" size={24} color="#8B5CF6" />
@@ -213,7 +235,10 @@ export const AdminDashboardScreen: React.FC = () => {
                       </View>
                       <View className="flex-row items-center space-x-2">
                         <Text className="text-sm text-gray-600">{reward.pointsCost} pts</Text>
-                        <Pressable className="bg-green-600 px-3 py-1 rounded-full">
+                        <Pressable 
+                          onPress={() => handleApproveReward(reward.id)}
+                          className="bg-green-600 px-3 py-1 rounded-full"
+                        >
                           <Text className="text-white text-sm font-medium">Approve</Text>
                         </Pressable>
                       </View>

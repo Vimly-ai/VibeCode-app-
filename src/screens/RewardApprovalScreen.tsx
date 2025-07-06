@@ -15,7 +15,7 @@ export const RewardApprovalScreen: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
   const [selectedReward, setSelectedReward] = useState<any>(null);
   const { currentUser } = useAuthStore();
-  const { employees } = useEmployeeStore();
+  const { employees, approveRewardRedemption, rejectRewardRedemption } = useEmployeeStore();
   
   // Get all reward redemptions across all employees
   const allRedemptions = employees.flatMap(emp => 
@@ -47,9 +47,13 @@ export const RewardApprovalScreen: React.FC = () => {
         {
           text: 'Approve',
           onPress: () => {
-            // In a real app, this would update the reward status in the database
-            Alert.alert('Success', 'Reward approved successfully!');
-            setSelectedReward(null);
+            const success = approveRewardRedemption(redemptionId);
+            if (success) {
+              Alert.alert('Success', 'Reward approved successfully!');
+              setSelectedReward(null);
+            } else {
+              Alert.alert('Error', 'Failed to approve reward');
+            }
           }
         }
       ]
@@ -66,9 +70,13 @@ export const RewardApprovalScreen: React.FC = () => {
           text: 'Reject',
           style: 'destructive',
           onPress: () => {
-            // In a real app, this would update the reward status and refund points
-            Alert.alert('Success', 'Reward rejected and points refunded.');
-            setSelectedReward(null);
+            const success = rejectRewardRedemption(redemptionId);
+            if (success) {
+              Alert.alert('Success', 'Reward rejected and points refunded.');
+              setSelectedReward(null);
+            } else {
+              Alert.alert('Error', 'Failed to reject reward');
+            }
           }
         }
       ]

@@ -19,7 +19,7 @@ export const EmployeeManagementScreen: React.FC = () => {
   const [rewardReason, setRewardReason] = useState('');
   
   const { currentUser, getAllUsers, getPendingUsers, approveUser, rejectUser, updateUserRole } = useAuthStore();
-  const { employees, getEmployeeStats } = useEmployeeStore();
+  const { employees, getEmployeeStats, awardBonusPoints } = useEmployeeStore();
   
   const approvedUsers = getAllUsers();
   const pendingUsers = getPendingUsers();
@@ -98,8 +98,12 @@ export const EmployeeManagementScreen: React.FC = () => {
       return;
     }
     
-    // In a real app, this would update the employee's points
-    Alert.alert('Success', `Awarded ${points} points to ${selectedEmployee?.name}`);
+    const success = awardBonusPoints(selectedEmployee.id, points, rewardReason);
+    if (success) {
+      Alert.alert('Success', `Awarded ${points} points to ${selectedEmployee?.name}`);
+    } else {
+      Alert.alert('Error', 'Failed to award points');
+    }
     setShowRewardModal(false);
     setRewardPoints('');
     setRewardReason('');

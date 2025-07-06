@@ -66,6 +66,9 @@ interface EmployeeState {
   initializeEmployee: (name: string, email: string) => void;
   checkIn: (employeeId: string, qrCode: string) => { success: boolean; message: string; pointsEarned: number; quote: MotivationalQuote };
   redeemReward: (employeeId: string, rewardId: string) => boolean;
+  approveRewardRedemption: (redemptionId: string) => boolean;
+  rejectRewardRedemption: (redemptionId: string) => boolean;
+  awardBonusPoints: (employeeId: string, points: number, reason: string) => boolean;
   getLeaderboard: () => Employee[];
   getEmployeeStats: (employeeId: string) => {
     todayPoints: number;
@@ -336,6 +339,92 @@ export const useEmployeeStore = create<EmployeeState>()(
               rewardsRedeemed: [...employees[employeeIndex].rewardsRedeemed, redemption],
             };
           }
+          
+          return {
+            ...state,
+            employees,
+            currentEmployee: state.currentEmployee?.id === employeeId ? employees[employeeIndex] : state.currentEmployee,
+          };
+        });
+        
+        return true;
+      },
+
+      approveRewardRedemption: (redemptionId: string) => {
+        set((state) => {
+          const employees = [...state.employees];
+          let updated = false;
+          
+          for (let i = 0; i < employees.length; i++) {
+            const redemptionIndex = employees[i].rewardsRedeemed.findIndex(r => r.id === redemptionId);
+            if (redemptionIndex !== -1) {
+              employees[i] = {
+                ...employees[i],
+                rewardsRedeemed: employees[i].rewardsRedeemed.map(reward =>
+                  reward.id === redemptionId ? { ...reward, status: 'approved' as const } : reward
+                )
+              };
+              updated = true;
+              break;
+            }
+          }
+          
+          return updated ? { ...state, employees } : state;
+        });
+        
+        return true;
+      },
+
+      rejectRewardRedemption: (redemptionId: string) => {
+        set((state) => {
+          const employees = [...state.employees];
+          let updated = false;
+          
+          for (let i = 0; i < employees.length; i++) {
+            const redemptionIndex = employees[i].rewardsRedeemed.findIndex(r => r.id === redemptionId);
+            if (redemptionIndex !== -1) {
+              const reward = employees[i].rewardsRedeemed[redemptionIndex];
+              employees[i] = {
+                ...employees[i],
+                totalPoints: employees[i].totalPoints + reward.pointsCost, // Refund points
+                rewardsRedeemed: employees[i].rewardsRedeemed.map(r =>
+                  r.id === redemptionId ? { ...r, status: 'rejected' as const } : r
+                )
+              };
+              updated = true;
+              break;
+            }
+          }
+          
+          return updated ? { ...state, employees } : state;
+        });
+        
+        return true;
+      },
+
+      awardBonusPoints: (employeeId: string, points: number, reason: string) => {
+        set((state) => {
+          const employees = [...state.employees];
+          const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+          
+          if (employeeIndex === -1) return state;
+          
+          const bonusCheckIn: CheckIn = {
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+            pointsEarned: points,
+            type: 'ontime', // Default type for bonus
+            bonusReason: `Admin Bonus: ${reason}`,
+          };
+          
+          employees[employeeIndex] = {
+            ...employees[employeeIndex],
+            totalPoints: employees[employeeIndex].totalPoints + points,
+            weeklyPoints: employees[employeeIndex].weeklyPoints + points,
+            monthlyPoints: employees[employeeIndex].monthlyPoints + points,
+            quarterlyPoints: employees[employeeIndex].quarterlyPoints + points,
+            checkIns: [...employees[employeeIndex].checkIns, bonusCheckIn],
+          };
           
           return {
             ...state,
