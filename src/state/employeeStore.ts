@@ -77,21 +77,20 @@ interface EmployeeState {
 }
 
 const defaultRewards: Reward[] = [
-  // Weekly Wins (5-10 pts)
-  { id: 'w1', name: '$5 Maverik Card', description: 'Fuel up with a $5 Maverik gift card', pointsCost: 5, category: 'weekly', icon: 'card', available: true },
+  // Weekly (5-10 pts)
+  { id: 'w1', name: '$5 Maverick Card', description: 'Fuel up with a $5 Maverick gift card', pointsCost: 5, category: 'weekly', icon: 'card', available: true },
+  { id: 'w2', name: 'Extra Break', description: 'Take an extra break during your shift', pointsCost: 8, category: 'weekly', icon: 'time', available: true },
   
-  // Monthly Momentum (25-50 pts)
+  // Monthly (25-50 pts)
   { id: 'm1', name: '$25 Gift Card', description: 'Choose from popular retailers', pointsCost: 25, category: 'monthly', icon: 'gift', available: true },
   
-  // Quarterly Crushers (75-150 pts)
+  // Quarterly (75-150 pts)
   { id: 'q1', name: '$100 Gift Card', description: 'High-value gift card of your choice', pointsCost: 75, category: 'quarterly', icon: 'gift', available: true },
-  { id: 'q2', name: 'Half Day Off', description: 'Take a half day off with pay', pointsCost: 100, category: 'quarterly', icon: 'calendar', available: true },
-  { id: 'q3', name: 'Team Lunch Sponsorship', description: 'We sponsor lunch for you and your team', pointsCost: 125, category: 'quarterly', icon: 'restaurant', available: true },
+  { id: 'q2', name: 'Half-Day Off', description: 'Take a half day off with pay', pointsCost: 100, category: 'quarterly', icon: 'calendar', available: true },
   
-  // Annual Legends (300+ pts)
-  { id: 'a1', name: 'Paid Weekend Trip', description: 'Two-day paid trip to a destination of choice', pointsCost: 300, category: 'annual', icon: 'airplane', available: true },
-  { id: 'a2', name: 'Extra Vacation Day', description: 'Additional paid vacation day', pointsCost: 250, category: 'annual', icon: 'calendar', available: true },
-  { id: 'a3', name: 'VIP Experience', description: 'Premium event or experience package', pointsCost: 400, category: 'annual', icon: 'star', available: true },
+  // Annual (300+ pts)
+  { id: 'a1', name: 'Paid Trip', description: 'Paid trip to a destination of your choice', pointsCost: 300, category: 'annual', icon: 'airplane', available: true },
+  { id: 'a2', name: 'Vacation Day', description: 'Additional paid vacation day', pointsCost: 350, category: 'annual', icon: 'calendar', available: true },
 ];
 
 const defaultBadges: Badge[] = [
