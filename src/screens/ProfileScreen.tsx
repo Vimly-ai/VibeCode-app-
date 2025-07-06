@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +13,14 @@ export const ProfileScreen: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState({
+    checkInReminders: true,
+    rewardUpdates: true,
+    bonusPointAlerts: true,
+    weeklyReports: false,
+    systemUpdates: true,
+  });
   const { currentEmployee, initializeEmployee } = useEmployeeStore();
   const { currentUser, signOut } = useAuthStore();
   
@@ -44,17 +52,20 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handleNotifications = () => {
-    Alert.alert(
-      'Notifications',
-      'Notification settings will be available in a future update.',
-      [{ text: 'OK' }]
-    );
+    setShowNotifications(true);
+  };
+
+  const updateNotificationSetting = (key: keyof typeof notifications, value: boolean) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const handleHelpSupport = () => {
     Alert.alert(
       'Help & Support',
-      'For assistance, please contact:\n\n📧 support@company.com\n📞 1-800-HELP\n\nOr visit our help center online.',
+      'For assistance, please contact:\n\n📧 Andy@Vimly.ai\n\nOr visit our help center online.',
       [{ text: 'OK' }]
     );
   };
@@ -62,7 +73,7 @@ export const ProfileScreen: React.FC = () => {
   const handleTermsPrivacy = () => {
     Alert.alert(
       'Terms & Privacy',
-      'Our terms of service and privacy policy protect your data and outline your rights.\n\nLast updated: January 2024\n\nFor full details, visit our website.',
+      'Our terms of service and privacy policy protect your data and outline your rights.\n\nLast updated: January 2025\n\nFor full details, visit our website.',
       [{ text: 'OK' }]
     );
   };
@@ -416,6 +427,139 @@ export const ProfileScreen: React.FC = () => {
         {/* Bottom padding */}
         <View className="h-20" />
       </ScrollView>
+
+      {/* Notifications Modal */}
+      <Modal
+        visible={showNotifications}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowNotifications(false)}
+      >
+        <SafeAreaView className="flex-1 bg-gray-50">
+          <View className="p-6 border-b border-gray-200 bg-white">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-2xl font-bold text-gray-900">Notifications</Text>
+              <Pressable
+                onPress={() => setShowNotifications(false)}
+                className="p-2"
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
+            <Text className="text-gray-600 mt-1">Manage your notification preferences</Text>
+          </View>
+
+          <ScrollView className="flex-1 p-6">
+            <View className="space-y-6">
+              {/* Check-in Reminders */}
+              <View className="bg-white rounded-xl p-5 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-4">
+                    <Text className="font-semibold text-gray-900">Check-in Reminders</Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      Daily reminders during check-in window
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifications.checkInReminders}
+                    onValueChange={(value) => updateNotificationSetting('checkInReminders', value)}
+                    trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
+                    thumbColor={notifications.checkInReminders ? '#FFFFFF' : '#9CA3AF'}
+                  />
+                </View>
+              </View>
+
+              {/* Reward Updates */}
+              <View className="bg-white rounded-xl p-5 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-4">
+                    <Text className="font-semibold text-gray-900">Reward Updates</Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      New rewards and redemption status updates
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifications.rewardUpdates}
+                    onValueChange={(value) => updateNotificationSetting('rewardUpdates', value)}
+                    trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
+                    thumbColor={notifications.rewardUpdates ? '#FFFFFF' : '#9CA3AF'}
+                  />
+                </View>
+              </View>
+
+              {/* Bonus Point Alerts */}
+              <View className="bg-white rounded-xl p-5 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-4">
+                    <Text className="font-semibold text-gray-900">Bonus Point Alerts</Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      Notifications when you receive bonus points
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifications.bonusPointAlerts}
+                    onValueChange={(value) => updateNotificationSetting('bonusPointAlerts', value)}
+                    trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
+                    thumbColor={notifications.bonusPointAlerts ? '#FFFFFF' : '#9CA3AF'}
+                  />
+                </View>
+              </View>
+
+              {/* Weekly Reports */}
+              <View className="bg-white rounded-xl p-5 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-4">
+                    <Text className="font-semibold text-gray-900">Weekly Reports</Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      Weekly summary of your performance and points
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifications.weeklyReports}
+                    onValueChange={(value) => updateNotificationSetting('weeklyReports', value)}
+                    trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
+                    thumbColor={notifications.weeklyReports ? '#FFFFFF' : '#9CA3AF'}
+                  />
+                </View>
+              </View>
+
+              {/* System Updates */}
+              <View className="bg-white rounded-xl p-5 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 mr-4">
+                    <Text className="font-semibold text-gray-900">System Updates</Text>
+                    <Text className="text-sm text-gray-600 mt-1">
+                      App updates and maintenance notifications
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notifications.systemUpdates}
+                    onValueChange={(value) => updateNotificationSetting('systemUpdates', value)}
+                    trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
+                    thumbColor={notifications.systemUpdates ? '#FFFFFF' : '#9CA3AF'}
+                  />
+                </View>
+              </View>
+
+              {/* Info Section */}
+              <View className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <View className="flex-row items-start">
+                  <Ionicons name="information-circle" size={20} color="#3B82F6" />
+                  <View className="flex-1 ml-3">
+                    <Text className="text-blue-900 font-medium">Notification Permissions</Text>
+                    <Text className="text-blue-800 text-sm mt-1">
+                      Make sure to allow notifications in your device settings to receive these alerts.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Bottom padding */}
+            <View className="h-20" />
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
