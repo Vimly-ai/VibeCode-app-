@@ -406,7 +406,7 @@ export const EmployeeManagementScreen: React.FC = () => {
         
         {/* Analytics */}
         {activeTab === 'analytics' && (
-          <View className="space-y-6">
+          <View className="space-y-8">
             {/* Attendance Trends */}
             <View className="bg-white rounded-xl p-6 shadow-sm">
               <Text className="text-lg font-semibold text-gray-900 mb-4">📊 Attendance Trends</Text>
@@ -582,7 +582,7 @@ export const EmployeeManagementScreen: React.FC = () => {
         )}
         
         {/* Bottom padding */}
-        <View className="h-20" />
+        <View className="h-32" />
       </ScrollView>
       
       {/* Employee Detail Modal */}
