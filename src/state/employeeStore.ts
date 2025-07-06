@@ -27,6 +27,7 @@ export interface Employee {
   longestStreak: number;
   badges: Badge[];
   checkIns: CheckIn[];
+  bonusPoints: BonusPoint[];
   lastCheckIn?: string;
   rewardsRedeemed: RewardRedemption[];
 }
@@ -36,7 +37,14 @@ export interface CheckIn {
   timestamp: string;
   pointsEarned: number;
   type: 'ontime' | 'early' | 'late';
-  bonusReason?: string;
+}
+
+export interface BonusPoint {
+  id: string;
+  timestamp: string;
+  pointsAwarded: number;
+  reason: string;
+  awardedBy: string; // Admin who awarded the bonus
 }
 
 export interface Reward {
@@ -78,6 +86,7 @@ interface EmployeeState {
     quarterlyPoints: number;
     currentStreak: number;
     recentCheckIns: CheckIn[];
+    recentBonusPoints: BonusPoint[];
   };
 }
 
@@ -200,6 +209,15 @@ const createMockEmployees = (): Employee[] => {
         { ...defaultBadges[1], unlockedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
       ],
       checkIns: createMockCheckIns('mock-1', 'consistent'),
+      bonusPoints: [
+        {
+          id: 'bonus-1',
+          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          pointsAwarded: 5,
+          reason: 'Excellent customer service',
+          awardedBy: 'Admin'
+        }
+      ],
       rewardsRedeemed: [],
     },
     {
@@ -216,6 +234,7 @@ const createMockEmployees = (): Employee[] => {
         { ...defaultBadges[0], unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
       ],
       checkIns: createMockCheckIns('mock-2', 'inconsistent'),
+      bonusPoints: [],
       rewardsRedeemed: [],
     },
     {
@@ -230,6 +249,15 @@ const createMockEmployees = (): Employee[] => {
       longestStreak: 7,
       badges: [],
       checkIns: createMockCheckIns('mock-3', 'improving'),
+      bonusPoints: [
+        {
+          id: 'bonus-2',
+          timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          pointsAwarded: 3,
+          reason: 'Great improvement in attendance',
+          awardedBy: 'Admin'
+        }
+      ],
       rewardsRedeemed: [],
     },
   ];
@@ -257,6 +285,7 @@ export const useEmployeeStore = create<EmployeeState>()(
           longestStreak: 0,
           badges: [],
           checkIns: [],
+          bonusPoints: [],
           rewardsRedeemed: [],
         };
         
@@ -527,12 +556,12 @@ export const useEmployeeStore = create<EmployeeState>()(
           
           if (employeeIndex === -1) return state;
           
-          const bonusCheckIn: CheckIn = {
+          const bonusPoint: BonusPoint = {
             id: Date.now().toString(),
             timestamp: new Date().toISOString(),
-            pointsEarned: points,
-            type: 'ontime', // Default type for bonus
-            bonusReason: `Admin Bonus: ${reason}`,
+            pointsAwarded: points,
+            reason: reason,
+            awardedBy: 'Admin',
           };
           
           employees[employeeIndex] = {
@@ -541,7 +570,7 @@ export const useEmployeeStore = create<EmployeeState>()(
             weeklyPoints: employees[employeeIndex].weeklyPoints + points,
             monthlyPoints: employees[employeeIndex].monthlyPoints + points,
             quarterlyPoints: employees[employeeIndex].quarterlyPoints + points,
-            checkIns: [...employees[employeeIndex].checkIns, bonusCheckIn],
+            bonusPoints: [...employees[employeeIndex].bonusPoints, bonusPoint],
           };
           
           return {
@@ -571,6 +600,7 @@ export const useEmployeeStore = create<EmployeeState>()(
             quarterlyPoints: 0,
             currentStreak: 0,
             recentCheckIns: [],
+            recentBonusPoints: [],
           };
         }
         
@@ -582,6 +612,10 @@ export const useEmployeeStore = create<EmployeeState>()(
         const recentCheckIns = employee.checkIns
           .slice(-7)
           .reverse();
+          
+        const recentBonusPoints = employee.bonusPoints
+          .slice(-7)
+          .reverse();
         
         return {
           todayPoints: todayCheckIns.reduce((sum, ci) => sum + ci.pointsEarned, 0),
@@ -590,6 +624,7 @@ export const useEmployeeStore = create<EmployeeState>()(
           quarterlyPoints: employee.quarterlyPoints,
           currentStreak: employee.currentStreak,
           recentCheckIns,
+          recentBonusPoints,
         };
       },
     }),

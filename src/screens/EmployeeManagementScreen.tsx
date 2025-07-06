@@ -576,6 +576,20 @@ export const EmployeeManagementScreen: React.FC = () => {
                     ).toLocaleString()}
                   </Text>
                 </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Bonus Points Awarded</Text>
+                  <Text className="font-semibold text-purple-600">
+                    {employeesWithData.reduce((sum, emp) => 
+                      sum + (emp.bonusPoints || []).reduce((bonusSum, b) => bonusSum + b.pointsAwarded, 0), 0
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Employees with Bonuses</Text>
+                  <Text className="font-semibold text-purple-600">
+                    {employeesWithData.filter(emp => (emp.bonusPoints || []).length > 0).length} employees
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
@@ -747,6 +761,33 @@ export const EmployeeManagementScreen: React.FC = () => {
                         ))}
                       </View>
                     </View>
+
+                    {/* Bonus Points History */}
+                    {selectedEmployee.bonusPoints && selectedEmployee.bonusPoints.length > 0 && (
+                      <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+                        <Text className="text-lg font-semibold text-gray-900 mb-4">Bonus Points History</Text>
+                        <View className="space-y-3">
+                          {selectedEmployee.bonusPoints.slice(-5).reverse().map((bonus, index) => (
+                            <View key={bonus.id} className="flex-row items-start justify-between p-3 bg-blue-50 rounded-lg">
+                              <View className="flex-1 mr-3">
+                                <Text className="text-gray-900 font-medium">
+                                  {format(parseISO(bonus.timestamp), 'MMM d, yyyy • h:mm a')}
+                                </Text>
+                                <Text className="text-sm text-gray-600 mt-1">
+                                  {bonus.reason}
+                                </Text>
+                                <Text className="text-xs text-gray-500 mt-1">
+                                  Awarded by {bonus.awardedBy}
+                                </Text>
+                              </View>
+                              <Text className="text-lg font-bold text-blue-600">
+                                +{bonus.pointsAwarded}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
                     
                     {/* Action Buttons */}
                     <View className="space-y-3 mb-8" style={{ zIndex: 10 }}>

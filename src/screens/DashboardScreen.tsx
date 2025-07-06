@@ -229,9 +229,6 @@ export const DashboardScreen: React.FC = () => {
                         <Text className="text-gray-900 font-medium">
                           {format(parseISO(checkIn.timestamp), 'MMM d, h:mm a')}
                         </Text>
-                        {checkIn.bonusReason && (
-                          <Text className="text-sm text-blue-600">{checkIn.bonusReason}</Text>
-                        )}
                       </View>
                     </View>
                     <Text className="text-lg font-semibold text-gray-900">
@@ -245,6 +242,41 @@ export const DashboardScreen: React.FC = () => {
             )}
           </View>
         </Animated.View>
+
+        {/* Recent Bonus Points */}
+        {stats.recentBonusPoints.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(650)} className="px-6 mb-6">
+            <View className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">Recent Bonus Points</Text>
+              <View className="space-y-3">
+                {stats.recentBonusPoints.slice(0, 5).map((bonus, index) => (
+                  <View key={bonus.id} className="flex-row items-center justify-between">
+                    <View className="flex-row items-center">
+                      <View className="w-8 h-8 rounded-full items-center justify-center mr-3 bg-blue-100">
+                        <Ionicons 
+                          name="star" 
+                          size={16} 
+                          color="#3B82F6" 
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-gray-900 font-medium">
+                          {format(parseISO(bonus.timestamp), 'MMM d, h:mm a')}
+                        </Text>
+                        <Text className="text-sm text-gray-600">
+                          {bonus.reason}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="text-lg font-semibold text-blue-600">
+                      +{bonus.pointsAwarded}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </Animated.View>
+        )}
         
         {/* Bottom padding */}
         <View style={{ height: insets.bottom + 20 }} />
