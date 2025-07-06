@@ -265,6 +265,16 @@ const createMockEmployees = (): Employee[] => {
   return mockEmployees;
 };
 
+// Migration function to ensure all employees have required properties
+const migrateEmployeeData = (employees: Employee[]): Employee[] => {
+  return employees.map(employee => ({
+    ...employee,
+    checkIns: employee.checkIns || [],
+    bonusPoints: employee.bonusPoints || [],
+    rewardsRedeemed: employee.rewardsRedeemed || [],
+  }));
+};
+
 export const useEmployeeStore = create<EmployeeState>()(
   persist(
     (set, get) => ({
@@ -570,7 +580,7 @@ export const useEmployeeStore = create<EmployeeState>()(
             weeklyPoints: employees[employeeIndex].weeklyPoints + points,
             monthlyPoints: employees[employeeIndex].monthlyPoints + points,
             quarterlyPoints: employees[employeeIndex].quarterlyPoints + points,
-            bonusPoints: [...employees[employeeIndex].bonusPoints, bonusPoint],
+            bonusPoints: [...(employees[employeeIndex].bonusPoints || []), bonusPoint],
           };
           
           return {
@@ -605,15 +615,15 @@ export const useEmployeeStore = create<EmployeeState>()(
         }
         
         const today = new Date();
-        const todayCheckIns = employee.checkIns.filter(ci => 
+        const todayCheckIns = (employee.checkIns || []).filter(ci => 
           isToday(parseISO(ci.timestamp))
         );
         
-        const recentCheckIns = employee.checkIns
+        const recentCheckIns = (employee.checkIns || [])
           .slice(-7)
           .reverse();
           
-        const recentBonusPoints = employee.bonusPoints
+        const recentBonusPoints = (employee.bonusPoints || [])
           .slice(-7)
           .reverse();
         
@@ -636,6 +646,15 @@ export const useEmployeeStore = create<EmployeeState>()(
         employees: state.employees,
         rewards: state.rewards,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Apply data migration to ensure all employees have required properties
+          state.employees = migrateEmployeeData(state.employees);
+          if (state.currentEmployee) {
+            state.currentEmployee = migrateEmployeeData([state.currentEmployee])[0];
+          }
+        }
+      },
     }
   )
 );
