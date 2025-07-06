@@ -698,6 +698,9 @@ export const useEmployeeStore = create<EmployeeState>()(
           if (state.currentEmployee) {
             state.currentEmployee = migrateEmployeeData([state.currentEmployee])[0];
           }
+          
+          // Always use the latest default rewards (in case we've updated them)
+          state.rewards = defaultRewards;
         }
       },
     }
