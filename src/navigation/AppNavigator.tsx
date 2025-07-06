@@ -17,7 +17,7 @@ import { useAuthStore } from '../state/authStore';
 const Tab = createBottomTabNavigator();
 
 export const AppNavigator: React.FC = () => {
-  const { currentEmployee } = useEmployeeStore();
+  const { currentEmployee, employees, initializeEmployee, setCurrentEmployee } = useEmployeeStore();
   const { currentUser, isAuthenticated, autoSignIn, getPendingUsers } = useAuthStore();
   
   // Try auto sign-in on app load
@@ -26,6 +26,18 @@ export const AppNavigator: React.FC = () => {
       autoSignIn();
     }
   }, [autoSignIn, isAuthenticated]);
+  
+  // Ensure current user has employee record and set current employee
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'employee') {
+      const existingEmployee = employees.find(emp => emp.email === currentUser.email);
+      if (!existingEmployee) {
+        initializeEmployee(currentUser.name, currentUser.email);
+      } else {
+        setCurrentEmployee(currentUser.email);
+      }
+    }
+  }, [currentUser, employees, initializeEmployee, setCurrentEmployee]);
   
   // Show auth screen if not authenticated
   if (!isAuthenticated || !currentUser) {

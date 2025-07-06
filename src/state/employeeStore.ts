@@ -73,6 +73,7 @@ interface EmployeeState {
   
   // Actions
   initializeEmployee: (name: string, email: string) => void;
+  setCurrentEmployee: (email: string) => void;
   checkIn: (employeeId: string, qrCode: string) => { success: boolean; message: string; pointsEarned: number; quote: MotivationalQuote };
   redeemReward: (employeeId: string, rewardId: string) => boolean;
   approveRewardRedemption: (redemptionId: string) => boolean;
@@ -303,6 +304,16 @@ export const useEmployeeStore = create<EmployeeState>()(
           currentEmployee: employee,
           employees: [...state.employees, employee],
         }));
+      },
+
+      setCurrentEmployee: (email: string) => {
+        set((state) => {
+          const employee = state.employees.find(emp => emp.email === email);
+          return {
+            ...state,
+            currentEmployee: employee || null,
+          };
+        });
       },
 
       checkIn: (employeeId: string, qrCode: string) => {

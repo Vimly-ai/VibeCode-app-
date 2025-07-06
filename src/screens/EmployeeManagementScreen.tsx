@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,10 +19,21 @@ export const EmployeeManagementScreen: React.FC = () => {
   const [rewardReason, setRewardReason] = useState('');
   
   const { currentUser, getAllUsers, getPendingUsers, approveUser, rejectUser, updateUserRole } = useAuthStore();
-  const { employees, getEmployeeStats, awardBonusPoints } = useEmployeeStore();
+  const { employees, getEmployeeStats, awardBonusPoints, initializeEmployee } = useEmployeeStore();
   
   const approvedUsers = getAllUsers();
   const pendingUsers = getPendingUsers();
+  
+  // Ensure all approved users have employee records
+  useEffect(() => {
+    approvedUsers.forEach(user => {
+      const existingEmployee = employees.find(emp => emp.email === user.email);
+      if (!existingEmployee) {
+        // Initialize employee record for approved user without employee data
+        initializeEmployee(user.name, user.email);
+      }
+    });
+  }, [approvedUsers.length, employees, initializeEmployee]);
   
   // Merge auth users with employee data
   const employeesWithData = approvedUsers.map(user => {
@@ -33,7 +44,9 @@ export const EmployeeManagementScreen: React.FC = () => {
       totalPoints: employeeData?.totalPoints || 0,
       currentStreak: employeeData?.currentStreak || 0,
       checkIns: employeeData?.checkIns || [],
+      bonusPoints: employeeData?.bonusPoints || [],
       badges: employeeData?.badges || [],
+      rewardsRedeemed: employeeData?.rewardsRedeemed || [],
     };
   });
   
@@ -56,8 +69,11 @@ export const EmployeeManagementScreen: React.FC = () => {
         {
           text: 'Approve',
           onPress: () => {
+            const user = pendingUsers.find(u => u.id === userId);
             const success = approveUser(userId, currentUser.id);
-            if (success) {
+            if (success && user) {
+              // Initialize the employee in the employee store
+              initializeEmployee(user.name, user.email);
               Alert.alert('Success', 'User approved successfully');
             }
           }
