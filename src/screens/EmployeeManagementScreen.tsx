@@ -462,7 +462,11 @@ export const EmployeeManagementScreen: React.FC = () => {
               </View>
             </View>
             
-            <ScrollView className="flex-1 p-6">
+            <ScrollView 
+              className="flex-1 p-6"
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
               {(() => {
                 const analysis = analyzeEmployeeData(selectedEmployee);
                 return (
@@ -596,10 +600,22 @@ export const EmployeeManagementScreen: React.FC = () => {
                     </View>
                     
                     {/* Action Buttons */}
-                    <View className="space-y-3">
+                    <View className="space-y-3 mb-8" style={{ zIndex: 10 }}>
                       <Pressable
-                        onPress={() => setShowRewardModal(true)}
+                        onPress={() => {
+                          Alert.alert('Debug', 'Award Bonus Points button pressed', [
+                            { text: 'Cancel' },
+                            { text: 'Open Modal', onPress: () => setShowRewardModal(true) }
+                          ]);
+                        }}
                         className="bg-blue-600 py-4 rounded-xl"
+                        style={{ 
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 3.84,
+                          elevation: 5,
+                        }}
                       >
                         <Text className="text-white text-center font-semibold text-lg">Award Bonus Points</Text>
                       </Pressable>
