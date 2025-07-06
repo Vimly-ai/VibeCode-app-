@@ -103,30 +103,8 @@ const demoUsers: User[] = [
 ];
 
 // Demo pending users
-const demoPendingUsers: User[] = [
-  {
-    id: 'pending-001',
-    email: 'john.doe@outlook.com',
-    name: 'John Doe',
-    passwordHash: 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3',
-    role: 'employee',
-    department: 'Sales',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    companyId: 'company-001'
-  },
-  {
-    id: 'pending-002',
-    email: 'jane.smith@hotmail.com',
-    name: 'Jane Smith',
-    passwordHash: 'c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4',
-    role: 'employee',
-    department: 'HR',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    companyId: 'company-001'
-  }
-];
+// Demo pending users - Start with clean slate (no pending users)
+const demoPendingUsers: User[] = [];
 
 export const useAuthStore = create<AuthState>()(
   persist(
