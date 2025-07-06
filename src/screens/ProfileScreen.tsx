@@ -42,6 +42,30 @@ export const ProfileScreen: React.FC = () => {
       ]
     );
   };
+
+  const handleNotifications = () => {
+    Alert.alert(
+      'Notifications',
+      'Notification settings will be available in a future update.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert(
+      'Help & Support',
+      'For assistance, please contact:\n\n📧 support@company.com\n📞 1-800-HELP\n\nOr visit our help center online.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleTermsPrivacy = () => {
+    Alert.alert(
+      'Terms & Privacy',
+      'Our terms of service and privacy policy protect your data and outline your rights.\n\nLast updated: January 2024\n\nFor full details, visit our website.',
+      [{ text: 'OK' }]
+    );
+  };
   
   // If no employee exists but user is authenticated, show onboarding
   if (!currentEmployee && currentUser) {
@@ -328,7 +352,13 @@ export const ProfileScreen: React.FC = () => {
           <View className="bg-white rounded-2xl p-6 shadow-sm">
             <Text className="text-lg font-semibold text-gray-900 mb-4">Settings</Text>
             <View className="space-y-4">
-              <Pressable className="flex-row items-center justify-between">
+              <Pressable 
+                onPress={handleNotifications}
+                className="flex-row items-center justify-between py-2"
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
                 <View className="flex-row items-center">
                   <Ionicons name="notifications" size={20} color="#6B7280" />
                   <Text className="text-gray-700 ml-3">Notifications</Text>
@@ -336,7 +366,13 @@ export const ProfileScreen: React.FC = () => {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </Pressable>
               
-              <Pressable className="flex-row items-center justify-between">
+              <Pressable 
+                onPress={handleHelpSupport}
+                className="flex-row items-center justify-between py-2"
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
                 <View className="flex-row items-center">
                   <Ionicons name="help-circle" size={20} color="#6B7280" />
                   <Text className="text-gray-700 ml-3">Help & Support</Text>
@@ -344,7 +380,13 @@ export const ProfileScreen: React.FC = () => {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </Pressable>
               
-              <Pressable className="flex-row items-center justify-between">
+              <Pressable 
+                onPress={handleTermsPrivacy}
+                className="flex-row items-center justify-between py-2"
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
                 <View className="flex-row items-center">
                   <Ionicons name="document-text" size={20} color="#6B7280" />
                   <Text className="text-gray-700 ml-3">Terms & Privacy</Text>
