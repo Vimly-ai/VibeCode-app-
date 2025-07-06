@@ -351,16 +351,24 @@ export const ProfileScreen: React.FC = () => {
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </Pressable>
-              
-              <Pressable onPress={handleSignOut} className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="log-out" size={20} color="#EF4444" />
-                  <Text className="text-red-600 ml-3">Sign Out</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </Pressable>
             </View>
           </View>
+        </Animated.View>
+
+        {/* Sign Out Button */}
+        <Animated.View entering={FadeInDown.delay(600)} className="mb-6">
+          <Pressable
+            onPress={handleSignOut}
+            className="bg-red-50 border border-red-200 rounded-2xl p-6"
+          >
+            <View className="flex-row items-center justify-center">
+              <Ionicons name="log-out" size={24} color="#EF4444" />
+              <Text className="text-red-600 font-semibold text-lg ml-3">Sign Out</Text>
+            </View>
+            <Text className="text-red-500 text-sm text-center mt-2">
+              You will need to sign in again to access the app
+            </Text>
+          </Pressable>
         </Animated.View>
         
         {/* Bottom padding */}
