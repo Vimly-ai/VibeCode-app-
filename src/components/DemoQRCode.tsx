@@ -7,7 +7,7 @@ import { useEmployeeStore } from '../state/employeeStore';
 interface DemoQRCodeProps {
   visible: boolean;
   onClose: () => void;
-  onCheckInSuccess?: (result: { success: boolean; message: string; pointsEarned: number }) => void;
+  onCheckInSuccess?: (result: { success: boolean; message: string; pointsEarned: number; quote?: any }) => void;
 }
 
 export const DemoQRCode: React.FC<DemoQRCodeProps> = ({ visible, onClose, onCheckInSuccess }) => {

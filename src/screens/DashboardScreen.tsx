@@ -15,7 +15,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export const DashboardScreen: React.FC = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [showDemoQR, setShowDemoQR] = useState(false);
-  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; pointsEarned: number } | null>(null);
+  const [scanResult, setScanResult] = useState<{ success: boolean; message: string; pointsEarned: number; quote?: any } | null>(null);
   const { currentEmployee, getEmployeeStats } = useEmployeeStore();
   const insets = useSafeAreaInsets();
   
@@ -39,7 +39,7 @@ export const DashboardScreen: React.FC = () => {
   
   const hasCheckedInToday = stats.todayPoints > 0;
   
-  const handleScanSuccess = (result: { success: boolean; message: string; pointsEarned: number }) => {
+  const handleScanSuccess = (result: { success: boolean; message: string; pointsEarned: number; quote?: any }) => {
     setScanResult(result);
     setShowScanner(false);
   };
@@ -268,7 +268,7 @@ export const DashboardScreen: React.FC = () => {
       {/* Scan Result Modal */}
       <Modal visible={!!scanResult} transparent animationType="fade">
         <View className="flex-1 bg-black/50 justify-center items-center px-6">
-          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-md">
             <View className="items-center">
               <Ionicons 
                 name={scanResult?.success ? "checkmark-circle" : "close-circle"} 
@@ -288,12 +288,35 @@ export const DashboardScreen: React.FC = () => {
                   </Text>
                 </View>
               )}
+              
+              {/* Motivational Quote */}
+              {scanResult?.quote && (
+                <Animated.View 
+                  entering={FadeInDown.delay(300)}
+                  className="mt-6 p-5 bg-blue-50 rounded-xl border border-blue-100"
+                >
+                  <View className="items-center mb-4">
+                    <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mb-2">
+                      <Ionicons name="bulb" size={24} color="#3B82F6" />
+                    </View>
+                    <Text className="text-sm font-semibold text-blue-700">
+                      Daily Inspiration
+                    </Text>
+                  </View>
+                  <Text className="text-gray-800 text-center text-base leading-relaxed font-medium italic">
+                    "{scanResult.quote.text}"
+                  </Text>
+                  <Text className="text-gray-600 text-center text-sm mt-3 font-medium">
+                    — {scanResult.quote.author}
+                  </Text>
+                </Animated.View>
+              )}
             </View>
             <Pressable
               onPress={() => setScanResult(null)}
               className="bg-blue-600 py-3 rounded-full mt-6"
             >
-              <Text className="text-white text-center font-semibold">Close</Text>
+              <Text className="text-white text-center font-semibold">Continue</Text>
             </Pressable>
           </View>
         </View>

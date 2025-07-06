@@ -18,7 +18,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 interface QRCodeScannerProps {
   onClose: () => void;
-  onScanSuccess: (result: { success: boolean; message: string; pointsEarned: number }) => void;
+  onScanSuccess: (result: { success: boolean; message: string; pointsEarned: number; quote?: any }) => void;
 }
 
 export const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onClose, onScanSuccess }) => {

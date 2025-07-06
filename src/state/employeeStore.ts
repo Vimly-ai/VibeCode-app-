@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format, parseISO, isToday, isSameWeek, startOfWeek, endOfWeek, subDays } from 'date-fns';
+import { getMotivationalQuote, MotivationalQuote } from '../utils/motivationalQuotes';
 
 export interface Badge {
   id: string;
@@ -63,7 +64,7 @@ interface EmployeeState {
   
   // Actions
   initializeEmployee: (name: string, email: string) => void;
-  checkIn: (employeeId: string, qrCode: string) => { success: boolean; message: string; pointsEarned: number };
+  checkIn: (employeeId: string, qrCode: string) => { success: boolean; message: string; pointsEarned: number; quote: MotivationalQuote };
   redeemReward: (employeeId: string, rewardId: string) => boolean;
   getLeaderboard: () => Employee[];
   getEmployeeStats: (employeeId: string) => {
@@ -301,7 +302,9 @@ export const useEmployeeStore = create<EmployeeState>()(
                        checkInType === 'ontime' ? 'On Time! +1 point' : 
                        'Better luck tomorrow!';
         
-        return { success: true, message, pointsEarned };
+        const quote = getMotivationalQuote(checkInType);
+        
+        return { success: true, message, pointsEarned, quote };
       },
 
       redeemReward: (employeeId: string, rewardId: string) => {
