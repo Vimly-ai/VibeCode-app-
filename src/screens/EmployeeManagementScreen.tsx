@@ -602,12 +602,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                     {/* Action Buttons */}
                     <View className="space-y-3 mb-8" style={{ zIndex: 10 }}>
                       <Pressable
-                        onPress={() => {
-                          Alert.alert('Debug', 'Award Bonus Points button pressed', [
-                            { text: 'Cancel' },
-                            { text: 'Open Modal', onPress: () => setShowRewardModal(true) }
-                          ]);
-                        }}
+                        onPress={() => setShowRewardModal(true)}
                         className="bg-blue-600 py-4 rounded-xl"
                         style={{ 
                           shadowColor: '#000',
@@ -637,11 +632,25 @@ export const EmployeeManagementScreen: React.FC = () => {
         )}
       </Modal>
       
-      {/* Reward Modal */}
-      <Modal visible={showRewardModal} transparent animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center items-center px-6">
-          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Award Bonus Points</Text>
+      {/* Reward Modal - Moved outside and given higher priority */}
+      <Modal 
+        visible={showRewardModal} 
+        transparent 
+        animationType="fade"
+        statusBarTranslucent
+        presentationStyle="overFullScreen"
+      >
+        <View className="flex-1 bg-black/60 justify-center items-center px-6" style={{ zIndex: 9999 }}>
+          <View className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-xl font-bold text-gray-900">Award Bonus Points</Text>
+              <Pressable
+                onPress={() => setShowRewardModal(false)}
+                className="p-2"
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
             
             <View className="space-y-4">
               <View>
@@ -649,9 +658,10 @@ export const EmployeeManagementScreen: React.FC = () => {
                 <TextInput
                   value={rewardPoints}
                   onChangeText={setRewardPoints}
-                  placeholder="Enter points"
+                  placeholder="Enter points (e.g., 10)"
                   keyboardType="numeric"
                   className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900"
+                  placeholderTextColor="#9CA3AF"
                 />
               </View>
               
@@ -660,12 +670,21 @@ export const EmployeeManagementScreen: React.FC = () => {
                 <TextInput
                   value={rewardReason}
                   onChangeText={setRewardReason}
-                  placeholder="e.g., Exceptional performance"
+                  placeholder="e.g., Exceptional performance this week"
                   multiline
                   numberOfLines={3}
                   className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900"
+                  placeholderTextColor="#9CA3AF"
+                  textAlignVertical="top"
                 />
               </View>
+              
+              {selectedEmployee && (
+                <View className="bg-blue-50 p-3 rounded-xl">
+                  <Text className="text-blue-800 font-medium">Awarding to: {selectedEmployee.name}</Text>
+                  <Text className="text-blue-600 text-sm">Current Points: {selectedEmployee.totalPoints}</Text>
+                </View>
+              )}
             </View>
             
             <View className="flex-row space-x-3 mt-6">
