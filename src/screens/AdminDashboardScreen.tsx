@@ -27,18 +27,24 @@ export const AdminDashboardScreen: React.FC = () => {
   const totalEmployees = allUsers.length;
   const pendingApprovals = pendingUsers.length;
   const totalPoints = employees.reduce((sum, emp) => sum + emp.totalPoints, 0);
-  const totalCheckIns = employees.reduce((sum, emp) => sum + emp.checkIns.length, 0);
+  const totalCheckIns = employees.reduce((sum, emp) => sum + (emp.checkIns || []).length, 0);
   const averagePoints = totalEmployees > 0 ? Math.round(totalPoints / totalEmployees) : 0;
   
   // Recent activity
   const recentCheckIns = employees
-    .flatMap(emp => emp.checkIns.map(ci => ({ ...ci, employeeName: emp.name })))
+    .flatMap(emp => (emp.checkIns || []).map(ci => ({ ...ci, employeeName: emp.name })))
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 10);
+    
+  // Recent bonus points
+  const recentBonusPoints = employees
+    .flatMap(emp => (emp.bonusPoints || []).map(bp => ({ ...bp, employeeName: emp.name })))
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 10);
   
   // Pending rewards
   const pendingRewards = employees
-    .flatMap(emp => emp.rewardsRedeemed.filter(reward => reward.status === 'pending'))
+    .flatMap(emp => (emp.rewardsRedeemed || []).filter(reward => reward.status === 'pending'))
     .sort((a, b) => new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime());
   
   const timeframeOptions = [
@@ -303,6 +309,42 @@ export const AdminDashboardScreen: React.FC = () => {
             </View>
           </View>
         </Animated.View>
+
+        {/* Recent Bonus Points */}
+        {recentBonusPoints.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(750)} className="px-6 mb-6">
+            <View className="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-blue-500">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">Recent Bonus Points</Text>
+              <View className="space-y-3">
+                {recentBonusPoints.slice(0, 8).map((bonus, index) => (
+                  <View key={bonus.id} className="flex-row items-center justify-between">
+                    <View className="flex-row items-center flex-1">
+                      <View className="w-8 h-8 rounded-full items-center justify-center mr-3 bg-blue-100">
+                        <Ionicons 
+                          name="star" 
+                          size={16} 
+                          color="#3B82F6" 
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="font-medium text-gray-900">{bonus.employeeName}</Text>
+                        <Text className="text-sm text-gray-600">
+                          {format(parseISO(bonus.timestamp), 'MMM d, h:mm a')}
+                        </Text>
+                        <Text className="text-xs text-gray-500 mt-1">
+                          {bonus.reason}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="text-sm font-semibold text-blue-600">
+                      +{bonus.pointsAwarded}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </Animated.View>
+        )}
         
         {/* Bottom padding */}
         <View className="h-20" />

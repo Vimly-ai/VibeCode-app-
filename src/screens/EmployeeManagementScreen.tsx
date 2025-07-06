@@ -331,17 +331,11 @@ export const EmployeeManagementScreen: React.FC = () => {
                     </View>
                     <View className="flex-row items-center">
                       <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                      <Text className="text-sm text-gray-600 ml-1">{employee.checkIns.length} check-ins</Text>
+                      <Text className="text-sm text-gray-600 ml-1">{(employee.checkIns || []).length} check-ins</Text>
                     </View>
                   </View>
                   <Pressable
-                    onPress={() => {
-                      console.log('View Details pressed for:', employee.name);
-                      Alert.alert('Debug', `Opening details for ${employee.name}`, [
-                        { text: 'Cancel' },
-                        { text: 'Open', onPress: () => setSelectedEmployee(employee) }
-                      ]);
-                    }}
+                    onPress={() => setSelectedEmployee(employee)}
                     className="bg-blue-600 px-4 py-2 rounded-full"
                   >
                     <Text className="text-white text-sm font-medium">View Details</Text>
