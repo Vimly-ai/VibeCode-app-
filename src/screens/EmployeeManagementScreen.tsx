@@ -335,7 +335,13 @@ export const EmployeeManagementScreen: React.FC = () => {
                     </View>
                   </View>
                   <Pressable
-                    onPress={() => setSelectedEmployee(employee)}
+                    onPress={() => {
+                      console.log('View Details pressed for:', employee.name);
+                      Alert.alert('Debug', `Opening details for ${employee.name}`, [
+                        { text: 'Cancel' },
+                        { text: 'Open', onPress: () => setSelectedEmployee(employee) }
+                      ]);
+                    }}
                     className="bg-blue-600 px-4 py-2 rounded-full"
                   >
                     <Text className="text-white text-sm font-medium">View Details</Text>
@@ -450,13 +456,26 @@ export const EmployeeManagementScreen: React.FC = () => {
       </ScrollView>
       
       {/* Employee Detail Modal */}
-      <Modal visible={!!selectedEmployee} animationType="slide" presentationStyle="pageSheet">
+      <Modal 
+        visible={!!selectedEmployee && !showRewardModal} 
+        animationType="slide" 
+        presentationStyle="pageSheet"
+        onRequestClose={() => setSelectedEmployee(null)}
+      >
         {selectedEmployee && (
           <View className="flex-1 bg-white">
             <View className="p-6 border-b border-gray-200">
               <View className="flex-row items-center justify-between">
                 <Text className="text-2xl font-bold text-gray-900">Employee Details</Text>
-                <Pressable onPress={() => setSelectedEmployee(null)} className="p-2">
+                <Pressable 
+                  onPress={() => {
+                    setSelectedEmployee(null);
+                    setShowRewardModal(false); // Close reward modal if open
+                    setRewardPoints('');
+                    setRewardReason('');
+                  }} 
+                  className="p-2"
+                >
                   <Ionicons name="close" size={24} color="#6B7280" />
                 </Pressable>
               </View>
