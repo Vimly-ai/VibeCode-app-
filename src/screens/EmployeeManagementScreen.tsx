@@ -100,7 +100,7 @@ export const EmployeeManagementScreen: React.FC = () => {
       };
     }
 
-    const checkIns = employee.checkIns;
+    const checkIns = employee.checkIns || [];
     const weeklyPatterns: { [key: string]: { early: number; ontime: number; late: number } } = {};
     const timePatterns: { [key: string]: number } = {};
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -137,13 +137,13 @@ export const EmployeeManagementScreen: React.FC = () => {
       else lateCount++;
     });
 
-    const averageMinutes = totalMinutes / checkIns.length;
+    const averageMinutes = checkIns.length > 0 ? totalMinutes / checkIns.length : 0;
     const averageHour = Math.floor(averageMinutes / 60);
     const averageMinute = Math.round(averageMinutes % 60);
-    const averageCheckInTime = `${averageHour.toString().padStart(2, '0')}:${averageMinute.toString().padStart(2, '0')}`;
+    const averageCheckInTime = checkIns.length > 0 ? `${averageHour.toString().padStart(2, '0')}:${averageMinute.toString().padStart(2, '0')}` : null;
 
     // Calculate consistency score (percentage of on-time or early)
-    const consistencyScore = Math.round(((earlyCount + onTimeCount) / checkIns.length) * 100);
+    const consistencyScore = checkIns.length > 0 ? Math.round(((earlyCount + onTimeCount) / checkIns.length) * 100) : 0;
 
     // Generate insights
     const insights = [];
@@ -415,7 +415,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="text-gray-700">Today's Check-in Rate</Text>
                   <Text className="font-semibold text-green-600">
                     {Math.round((employeesWithData.filter(emp => 
-                      emp.checkIns.some(ci => 
+                      (emp.checkIns || []).some(ci => 
                         format(parseISO(ci.timestamp), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
                       )
                     ).length / Math.max(employeesWithData.length, 1)) * 100)}%
@@ -431,7 +431,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="text-gray-700">Early Birds This Week</Text>
                   <Text className="font-semibold text-orange-600">
                     {employeesWithData.filter(emp => 
-                      emp.checkIns.filter(ci => ci.type === 'early').length >= 3
+                      (emp.checkIns || []).filter(ci => ci.type === 'early').length >= 3
                     ).length} employees
                   </Text>
                 </View>
@@ -446,8 +446,9 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="text-gray-700 flex-1 mr-3">Employees with Low Consistency (&lt;70%)</Text>
                   <Text className="font-semibold text-red-600 text-right">
                     {employeesWithData.filter(emp => {
-                      const totalCheckins = emp.checkIns.length;
-                      const goodCheckins = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      const checkIns = emp.checkIns || [];
+                      const totalCheckins = checkIns.length;
+                      const goodCheckins = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
                       return totalCheckins > 0 && (goodCheckins / totalCheckins * 100) < 70;
                     }).length} employees
                   </Text>
@@ -463,7 +464,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="font-semibold text-red-600 text-right">
                     {employeesWithData.filter(emp => {
                       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-                      return !emp.checkIns.some(ci => parseISO(ci.timestamp) > threeDaysAgo);
+                      return !(emp.checkIns || []).some(ci => parseISO(ci.timestamp) > threeDaysAgo);
                     }).length} employees
                   </Text>
                 </View>
@@ -495,20 +496,23 @@ export const EmployeeManagementScreen: React.FC = () => {
                     "font-semibold",
                     employeesWithData.length > 0 && 
                     (employeesWithData.reduce((sum, emp) => {
-                      const total = emp.checkIns.length;
-                      const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      const checkIns = emp.checkIns || [];
+                      const total = checkIns.length;
+                      const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
                       return sum + (total > 0 ? good / total * 100 : 0);
                     }, 0) / employeesWithData.length) >= 80 ? "text-green-600" : 
                     (employeesWithData.reduce((sum, emp) => {
-                      const total = emp.checkIns.length;
-                      const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      const checkIns = emp.checkIns || [];
+                      const total = checkIns.length;
+                      const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
                       return sum + (total > 0 ? good / total * 100 : 0);
                     }, 0) / employeesWithData.length) >= 60 ? "text-yellow-600" : "text-red-600"
                   )}>
                     {employeesWithData.length > 0 ? 
                       Math.round(employeesWithData.reduce((sum, emp) => {
-                        const total = emp.checkIns.length;
-                        const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                        const checkIns = emp.checkIns || [];
+                        const total = checkIns.length;
+                        const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
                         return sum + (total > 0 ? good / total * 100 : 0);
                       }, 0) / employeesWithData.length) + '%'
                       : '0%'
@@ -525,7 +529,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
                   const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].indexOf(day) + 1;
                   const dayCheckIns = employeesWithData.flatMap(emp => 
-                    emp.checkIns.filter(ci => {
+                    (emp.checkIns || []).filter(ci => {
                       const checkInDay = parseISO(ci.timestamp).getDay();
                       return checkInDay === dayIndex;
                     })
@@ -564,7 +568,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="text-gray-700">Pending Reward Approvals</Text>
                   <Text className="font-semibold text-orange-600">
                     {employeesWithData.reduce((sum, emp) => 
-                      sum + emp.rewardsRedeemed.filter(r => r.status === 'pending').length, 0
+                      sum + (emp.rewardsRedeemed || []).filter(r => r.status === 'pending').length, 0
                     )}
                   </Text>
                 </View>
@@ -572,7 +576,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                   <Text className="text-gray-700">Points Spent on Rewards</Text>
                   <Text className="font-semibold text-green-600">
                     {employeesWithData.reduce((sum, emp) => 
-                      sum + emp.rewardsRedeemed.reduce((rewardSum, r) => rewardSum + r.pointsCost, 0), 0
+                      sum + (emp.rewardsRedeemed || []).reduce((rewardSum, r) => rewardSum + r.pointsCost, 0), 0
                     ).toLocaleString()}
                   </Text>
                 </View>
@@ -656,9 +660,9 @@ export const EmployeeManagementScreen: React.FC = () => {
                         <Text className="text-gray-700">Current Streak</Text>
                         <Text className="font-semibold text-orange-600">{selectedEmployee.currentStreak} days</Text>
                       </View>
-                      <View className="flex-row justify-between items-center mb-3">
+                      <View className="flex-row items-center justify-between mb-3">
                         <Text className="text-gray-700">Total Check-ins</Text>
-                        <Text className="font-semibold text-green-600">{selectedEmployee.checkIns.length}</Text>
+                        <Text className="font-semibold text-green-600">{(selectedEmployee.checkIns || []).length}</Text>
                       </View>
                       <View className="flex-row justify-between items-center">
                         <Text className="text-gray-700">Consistency Score</Text>
