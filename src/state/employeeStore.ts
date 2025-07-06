@@ -79,12 +79,9 @@ interface EmployeeState {
 const defaultRewards: Reward[] = [
   // Weekly Wins (5-10 pts)
   { id: 'w1', name: '$5 Maverik Card', description: 'Fuel up with a $5 Maverik gift card', pointsCost: 5, category: 'weekly', icon: 'card', available: true },
-  { id: 'w2', name: 'Extra 15min Break', description: 'Take an extra 15-minute break', pointsCost: 8, category: 'weekly', icon: 'time', available: true },
   
   // Monthly Momentum (25-50 pts)
   { id: 'm1', name: '$25 Gift Card', description: 'Choose from popular retailers', pointsCost: 25, category: 'monthly', icon: 'gift', available: true },
-  { id: 'm2', name: 'Casual Friday Pass', description: 'Dress casual for a Friday', pointsCost: 30, category: 'monthly', icon: 'shirt', available: true },
-  { id: 'm3', name: 'Premium Parking Spot', description: 'Reserve the best parking spot for a week', pointsCost: 40, category: 'monthly', icon: 'car', available: true },
   
   // Quarterly Crushers (75-150 pts)
   { id: 'q1', name: '$100 Gift Card', description: 'High-value gift card of your choice', pointsCost: 75, category: 'quarterly', icon: 'gift', available: true },
