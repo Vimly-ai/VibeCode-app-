@@ -151,6 +151,15 @@ export const AuthScreen: React.FC = () => {
     setLoading(false);
   };
 
+  const handleEmployeeLogin = async () => {
+    setLoading(true);
+    const result = await signIn('sarah.johnson@gmail.com', 'demo123');
+    if (!result.success) {
+      Alert.alert('Error', result.message);
+    }
+    setLoading(false);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -312,17 +321,28 @@ export const AuthScreen: React.FC = () => {
               <Ionicons name="construct" size={24} color="#F59E0B" />
               <Text className="text-yellow-800 font-semibold mt-2 mb-1">Demo Access</Text>
               <Text className="text-yellow-700 text-sm text-center mb-4">
-                Try the admin dashboard with demo data
+                Try the app with demo data
               </Text>
-              <Pressable
-                onPress={handleDemoLogin}
-                disabled={loading}
-                className="bg-yellow-600 px-6 py-3 rounded-full"
-              >
-                <Text className="text-white font-semibold">
-                  {loading ? 'Loading...' : 'Demo Admin Login'}
-                </Text>
-              </Pressable>
+              <View className="flex-row space-x-3">
+                <Pressable
+                  onPress={handleDemoLogin}
+                  disabled={loading}
+                  className="bg-yellow-600 px-4 py-3 rounded-full flex-1"
+                >
+                  <Text className="text-white font-semibold text-center">
+                    {loading ? 'Loading...' : 'Admin Login'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleEmployeeLogin}
+                  disabled={loading}
+                  className="bg-blue-600 px-4 py-3 rounded-full flex-1"
+                >
+                  <Text className="text-white font-semibold text-center">
+                    {loading ? 'Loading...' : 'Employee Login'}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </Animated.View>
 
@@ -369,7 +389,9 @@ export const AuthScreen: React.FC = () => {
             <Text className="text-blue-800 font-semibold mb-2">Demo Credentials:</Text>
             <Text className="text-blue-700 text-sm">
               • Admin: admin@demo.com / admin123{'\n'}
-              • Employee: sarah.johnson@gmail.com / demo123
+              • Employee: sarah.johnson@gmail.com / demo123{'\n'}
+              • Employee: mike.chen@yahoo.com / demo123{'\n'}
+              • Employee: jane.smith@company.com / demo123
             </Text>
           </Animated.View>
 

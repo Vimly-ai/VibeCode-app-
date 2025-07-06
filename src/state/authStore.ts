@@ -63,7 +63,7 @@ const demoAdmin: User = {
   id: 'admin-001',
   email: 'admin@demo.com',
   name: 'Admin User',
-  passwordHash: 'f8f3d4c8e5a2b1c7d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2', // hashed "admin123"
+  passwordHash: '36a5df1a5d8a4a52dde4962de2b267fa23e6f9d0fcb7166db7309b2bf8e0cd87', // hashed "admin123"
   role: 'admin',
   department: 'Management',
   status: 'approved',
@@ -78,7 +78,7 @@ const demoUsers: User[] = [
     id: 'user-001',
     email: 'sarah.johnson@gmail.com',
     name: 'Sarah Johnson',
-    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
+    passwordHash: '2f90bcd72a728cf90a8150dbc05c5435bb33b39a75bbd8399d7515066e0d98b6', // hashed "demo123"
     role: 'employee',
     department: 'Engineering',
     status: 'approved',
@@ -91,7 +91,7 @@ const demoUsers: User[] = [
     id: 'user-002',
     email: 'mike.chen@yahoo.com',
     name: 'Mike Chen',
-    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
+    passwordHash: '2f90bcd72a728cf90a8150dbc05c5435bb33b39a75bbd8399d7515066e0d98b6', // hashed "demo123"
     role: 'employee',
     department: 'Marketing',
     status: 'approved',
@@ -104,7 +104,7 @@ const demoUsers: User[] = [
     id: 'user-003',
     email: 'jane.smith@company.com',
     name: 'Jane Smith',
-    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
+    passwordHash: '2f90bcd72a728cf90a8150dbc05c5435bb33b39a75bbd8399d7515066e0d98b6', // hashed "demo123"
     role: 'employee',
     department: 'Hr',
     status: 'approved',
