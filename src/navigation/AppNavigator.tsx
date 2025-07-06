@@ -9,6 +9,7 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { AdminDashboardScreen } from '../screens/AdminDashboardScreen';
 import { EmployeeManagementScreen } from '../screens/EmployeeManagementScreen';
 import { RewardApprovalScreen } from '../screens/RewardApprovalScreen';
+import { QRGeneratorScreen } from '../screens/QRGeneratorScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { useEmployeeStore } from '../state/employeeStore';
 import { useAuthStore } from '../state/authStore';
@@ -48,10 +49,10 @@ export const AppNavigator: React.FC = () => {
                 iconName = focused ? 'analytics' : 'analytics-outline';
               } else if (route.name === 'Employees') {
                 iconName = focused ? 'people' : 'people-outline';
+              } else if (route.name === 'QR Codes') {
+                iconName = focused ? 'qr-code' : 'qr-code-outline';
               } else if (route.name === 'Rewards') {
                 iconName = focused ? 'gift' : 'gift-outline';
-              } else if (route.name === 'Leaderboard') {
-                iconName = focused ? 'trophy' : 'trophy-outline';
               } else if (route.name === 'Profile') {
                 iconName = focused ? 'person' : 'person-outline';
               }
@@ -85,12 +86,12 @@ export const AppNavigator: React.FC = () => {
             component={EmployeeManagementScreen}
           />
           <Tab.Screen 
-            name="Rewards" 
-            component={RewardApprovalScreen}
+            name="QR Codes" 
+            component={QRGeneratorScreen}
           />
           <Tab.Screen 
-            name="Leaderboard" 
-            component={LeaderboardScreen}
+            name="Rewards" 
+            component={RewardApprovalScreen}
           />
           <Tab.Screen 
             name="Profile" 

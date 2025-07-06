@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format, parseISO, isToday, isSameWeek, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { getMotivationalQuote, MotivationalQuote } from '../utils/motivationalQuotes';
+import { validateQRCode, isWithinValidTimeWindow } from '../utils/qrCodeConfig';
 
 export interface Badge {
   id: string;
@@ -266,14 +267,41 @@ export const useEmployeeStore = create<EmployeeState>()(
       },
 
       checkIn: (employeeId: string, qrCode: string) => {
+        // Validate QR code format and authenticity
+        const qrValidation = validateQRCode(qrCode);
+        if (!qrValidation.isValid) {
+          const quote = getMotivationalQuote('late'); // Default quote for failed attempts
+          return { 
+            success: false, 
+            message: qrValidation.reason || 'Invalid QR code', 
+            pointsEarned: 0, 
+            quote 
+          };
+        }
+        
+        // Check if within valid time window (6:00 AM - 9:00 AM MST)
+        const timeValidation = isWithinValidTimeWindow();
+        if (!timeValidation.isValid) {
+          const quote = getMotivationalQuote('late');
+          return { 
+            success: false, 
+            message: timeValidation.reason || 'Check-in outside valid hours', 
+            pointsEarned: 0, 
+            quote 
+          };
+        }
+        
         const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
+        
+        // Convert to MST for point calculation
+        const mstTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Denver"}));
+        const currentHour = mstTime.getHours();
+        const currentMinute = mstTime.getMinutes();
         const currentTime = currentHour * 60 + currentMinute;
         
-        // 8:00 AM = 480 minutes, 7:45 AM = 465 minutes
-        const onTimeThreshold = 480; // 8:00 AM
-        const earlyBirdThreshold = 465; // 7:45 AM
+        // MST Time thresholds: 7:45 AM = 465 minutes, 8:00 AM = 480 minutes
+        const earlyBirdThreshold = 465; // 7:45 AM MST
+        const onTimeThreshold = 480;    // 8:00 AM MST
         
         let pointsEarned = 0;
         let checkInType: 'ontime' | 'early' | 'late' = 'late';
@@ -286,8 +314,35 @@ export const useEmployeeStore = create<EmployeeState>()(
           pointsEarned = 1;
           checkInType = 'ontime';
         } else {
-          pointsEarned = 0;
+          pointsEarned = 1; // Still within valid window, give 1 point
           checkInType = 'late';
+        }
+        
+        const state = get();
+        const employees = [...state.employees];
+        const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+        
+        if (employeeIndex === -1) {
+          const quote = getMotivationalQuote('late');
+          return { success: false, message: 'Employee not found', pointsEarned: 0, quote };
+        }
+        
+        const employee = { ...employees[employeeIndex] };
+        
+        // Check if already checked in today
+        const today = format(now, 'yyyy-MM-dd');
+        const todayCheckIn = employee.checkIns.find(ci => 
+          format(parseISO(ci.timestamp), 'yyyy-MM-dd') === today
+        );
+        
+        if (todayCheckIn) {
+          const quote = getMotivationalQuote('late');
+          return { 
+            success: false, 
+            message: 'You have already checked in today. One check-in per day allowed.', 
+            pointsEarned: 0, 
+            quote 
+          };
         }
         
         const checkIn: CheckIn = {
@@ -298,88 +353,71 @@ export const useEmployeeStore = create<EmployeeState>()(
           bonusReason,
         };
         
-        set((state) => {
-          const employees = [...state.employees];
-          const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
-          
-          if (employeeIndex === -1) {
-            return { success: false, message: 'Employee not found', pointsEarned: 0 };
-          }
-          
-          const employee = { ...employees[employeeIndex] };
-          
-          // Check if already checked in today
-          const today = format(now, 'yyyy-MM-dd');
-          const todayCheckIn = employee.checkIns.find(ci => 
-            format(parseISO(ci.timestamp), 'yyyy-MM-dd') === today
-          );
-          
-          if (todayCheckIn) {
-            return state; // Already checked in today
-          }
-          
-          // Add check-in
-          employee.checkIns.push(checkIn);
-          
-          // Calculate streak
-          const yesterday = subDays(now, 1);
-          const yesterdayFormatted = format(yesterday, 'yyyy-MM-dd');
-          const yesterdayCheckIn = employee.checkIns.find(ci => 
-            format(parseISO(ci.timestamp), 'yyyy-MM-dd') === yesterdayFormatted
-          );
-          
-          if (yesterdayCheckIn) {
-            employee.currentStreak++;
-          } else {
-            employee.currentStreak = 1;
-          }
-          
-          if (employee.currentStreak > employee.longestStreak) {
-            employee.longestStreak = employee.currentStreak;
-          }
-          
-          // Add streak bonuses
-          if (employee.currentStreak === 7) {
-            pointsEarned += 5;
-            bonusReason = 'Perfect Week Bonus';
-          } else if (employee.currentStreak === 10) {
-            pointsEarned += 10;
-            bonusReason = '10-Day Streak Bonus';
-          }
-          
-          // Update points
-          employee.totalPoints += pointsEarned;
-          employee.weeklyPoints += pointsEarned;
-          employee.monthlyPoints += pointsEarned;
-          employee.quarterlyPoints += pointsEarned;
-          employee.lastCheckIn = now.toISOString();
-          
-          // Check for new badges
-          const newBadges = [];
-          if (employee.totalPoints >= 100 && !employee.badges.find(b => b.id === 'point_collector')) {
-            newBadges.push(defaultBadges.find(b => b.id === 'point_collector')!);
-          }
-          if (employee.currentStreak >= 7 && !employee.badges.find(b => b.id === 'streak_master')) {
-            newBadges.push(defaultBadges.find(b => b.id === 'streak_master')!);
-          }
-          
-          employee.badges.push(...newBadges.map(badge => ({
-            ...badge,
-            unlockedAt: now.toISOString(),
-          })));
-          
-          employees[employeeIndex] = employee;
-          
-          return {
-            ...state,
-            employees,
-            currentEmployee: state.currentEmployee?.id === employeeId ? employee : state.currentEmployee,
-          };
+        // Add check-in
+        employee.checkIns.push(checkIn);
+        
+        // Calculate streak
+        const yesterday = subDays(now, 1);
+        const yesterdayFormatted = format(yesterday, 'yyyy-MM-dd');
+        const yesterdayCheckIn = employee.checkIns.find(ci => 
+          format(parseISO(ci.timestamp), 'yyyy-MM-dd') === yesterdayFormatted
+        );
+        
+        if (yesterdayCheckIn) {
+          employee.currentStreak++;
+        } else {
+          employee.currentStreak = 1;
+        }
+        
+        if (employee.currentStreak > employee.longestStreak) {
+          employee.longestStreak = employee.currentStreak;
+        }
+        
+        // Add streak bonuses
+        if (employee.currentStreak === 7) {
+          pointsEarned += 5;
+          bonusReason = 'Perfect Week Bonus';
+          checkIn.pointsEarned = pointsEarned;
+          checkIn.bonusReason = bonusReason;
+        } else if (employee.currentStreak === 10) {
+          pointsEarned += 10;
+          bonusReason = '10-Day Streak Bonus';
+          checkIn.pointsEarned = pointsEarned;
+          checkIn.bonusReason = bonusReason;
+        }
+        
+        // Update points
+        employee.totalPoints += pointsEarned;
+        employee.weeklyPoints += pointsEarned;
+        employee.monthlyPoints += pointsEarned;
+        employee.quarterlyPoints += pointsEarned;
+        employee.lastCheckIn = now.toISOString();
+        
+        // Check for new badges
+        const newBadges = [];
+        if (employee.totalPoints >= 100 && !employee.badges.find(b => b.id === 'point_collector')) {
+          newBadges.push(defaultBadges.find(b => b.id === 'point_collector')!);
+        }
+        if (employee.currentStreak >= 7 && !employee.badges.find(b => b.id === 'streak_master')) {
+          newBadges.push(defaultBadges.find(b => b.id === 'streak_master')!);
+        }
+        
+        employee.badges.push(...newBadges.map(badge => ({
+          ...badge,
+          unlockedAt: now.toISOString(),
+        })));
+        
+        employees[employeeIndex] = employee;
+        
+        set({
+          ...state,
+          employees,
+          currentEmployee: state.currentEmployee?.id === employeeId ? employee : state.currentEmployee,
         });
         
         const message = checkInType === 'early' ? 'Early Bird! +2 points' : 
-                       checkInType === 'ontime' ? 'On Time! +1 point' : 
-                       'Better luck tomorrow!';
+                       checkInType === 'ontime' ? 'Perfect timing! +1 point' : 
+                       'Good job checking in! +1 point';
         
         const quote = getMotivationalQuote(checkInType);
         

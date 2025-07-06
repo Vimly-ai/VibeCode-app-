@@ -3,6 +3,7 @@ import { View, Text, Pressable, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEmployeeStore } from '../state/employeeStore';
+import { generateDailyQRCode, getQRCodeData } from '../utils/qrCodeConfig';
 
 interface DemoQRCodeProps {
   visible: boolean;
@@ -16,8 +17,8 @@ export const DemoQRCode: React.FC<DemoQRCodeProps> = ({ visible, onClose, onChec
   const handleDemoCheckIn = () => {
     if (!currentEmployee) return;
     
-    // Simulate scanning a QR code
-    const demoQRCode = "employee-checkin-demo-code-" + Date.now();
+    // Use the real QR code format for demo
+    const demoQRCode = generateDailyQRCode();
     const result = checkIn(currentEmployee.id, demoQRCode);
     
     if (onCheckInSuccess) {
@@ -41,16 +42,35 @@ export const DemoQRCode: React.FC<DemoQRCodeProps> = ({ visible, onClose, onChec
             </Text>
             
             <Text className="text-gray-600 text-center mb-6">
-              This is a demo QR code for testing the check-in functionality.
+              This simulates scanning the official check-in QR code with today's validation.
             </Text>
             
-            {/* Mock QR Code */}
-            <View className="w-48 h-48 bg-gray-100 rounded-xl items-center justify-center mb-6">
-              <View className="grid grid-cols-8 gap-1">
-                {Array.from({ length: 64 }).map((_, i) => (
+            {/* QR Code Info */}
+            <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <Text className="text-blue-800 font-semibold mb-2">QR Code Details:</Text>
+              <View className="space-y-2">
+                <Text className="text-blue-700 text-sm">
+                  • Valid: {new Date().toLocaleDateString()}
+                </Text>
+                <Text className="text-blue-700 text-sm">
+                  • Time Window: 6:00 AM - 9:00 AM MST
+                </Text>
+                <Text className="text-blue-700 text-sm">
+                  • One scan per day limit
+                </Text>
+                <Text className="text-blue-700 text-sm">
+                  • Secure daily token validation
+                </Text>
+              </View>
+            </View>
+            
+            {/* Mock QR Code Visual */}
+            <View className="w-32 h-32 bg-gray-100 rounded-xl items-center justify-center mb-6">
+              <View className="grid grid-cols-6 gap-1">
+                {Array.from({ length: 36 }).map((_, i) => (
                   <View
                     key={i}
-                    className={`w-3 h-3 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'}`}
+                    className={`w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'}`}
                   />
                 ))}
               </View>
