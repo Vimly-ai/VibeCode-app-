@@ -80,7 +80,7 @@ export const validateQRCode = (scannedData: string): {
     if (!scannedData.includes(QR_CONFIG.baseUrl)) {
       return {
         isValid: false,
-        reason: 'Invalid QR code format. Please use the official check-in QR code.'
+        reason: 'This is not a valid check-in QR code.'
       };
     }
     

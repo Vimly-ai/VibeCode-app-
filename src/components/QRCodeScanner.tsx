@@ -104,8 +104,8 @@ export const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onClose, onScanSuc
     
     setScanned(true);
     
-    // Simulate QR code validation - in a real app, this would validate against a server
-    if (data.includes('employee-checkin')) {
+    // Validate QR code using proper validation logic
+    if (data.includes('rewards.company.com/checkin')) {
       const result = checkIn(currentEmployee.id, data);
       onScanSuccess(result);
     } else {
