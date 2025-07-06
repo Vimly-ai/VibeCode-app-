@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,16 +9,30 @@ import { cn } from '../utils/cn';
 
 export const AuthScreen: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [department, setDepartment] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const { signUp, signIn, forgotPassword, resetPassword, autoSignIn, savedCredentials } = useAuthStore();
 
-  const departments = [
-    'Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 
-    'Operations', 'Customer Success', 'Design', 'Product', 'Management'
-  ];
+  // Auto-fill saved credentials
+  React.useEffect(() => {
+    if (savedCredentials && savedCredentials.rememberMe) {
+      setEmail(savedCredentials.email);
+      setRememberMe(true);
+      // Try auto sign-in
+      autoSignIn();
+    }
+  }, [savedCredentials, autoSignIn]);
+
+
 
   const handleSubmit = async () => {
     if (!email.trim()) {
@@ -26,9 +40,21 @@ export const AuthScreen: React.FC = () => {
       return;
     }
 
-    if (isSignUp && !name.trim()) {
-      Alert.alert('Error', 'Please enter your full name');
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter your password');
       return;
+    }
+
+    if (isSignUp) {
+      if (!name.trim()) {
+        Alert.alert('Error', 'Please enter your full name');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
     }
 
     setLoading(true);
@@ -36,9 +62,9 @@ export const AuthScreen: React.FC = () => {
     try {
       let result;
       if (isSignUp) {
-        result = await signUp(email.trim(), name.trim(), department || undefined);
+        result = await signUp(email.trim(), name.trim(), password);
       } else {
-        result = await signIn(email.trim());
+        result = await signIn(email.trim(), password, rememberMe);
       }
 
       if (result.success) {
@@ -47,8 +73,65 @@ export const AuthScreen: React.FC = () => {
           setIsSignUp(false);
           setEmail('');
           setName('');
-          setDepartment('');
+          setPassword('');
+          setConfirmPassword('');
         }
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email address first');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await forgotPassword(email.trim());
+      if (result.success) {
+        Alert.alert('Reset Code Sent', result.message, [
+          { text: 'OK', onPress: () => setShowResetPassword(true) }
+        ]);
+        setShowForgotPassword(false);
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetToken.trim() || !newPassword.trim()) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await resetPassword(email.trim(), resetToken.trim(), newPassword);
+      if (result.success) {
+        Alert.alert('Success', result.message, [
+          { text: 'OK', onPress: () => {
+            setShowResetPassword(false);
+            setResetToken('');
+            setNewPassword('');
+          }}
+        ]);
       } else {
         Alert.alert('Error', result.message);
       }
@@ -61,7 +144,7 @@ export const AuthScreen: React.FC = () => {
 
   const handleDemoLogin = async () => {
     setLoading(true);
-    const result = await signIn('admin@demo.com');
+    const result = await signIn('admin@demo.com', 'admin123');
     if (!result.success) {
       Alert.alert('Error', result.message);
     }
@@ -125,21 +208,63 @@ export const AuthScreen: React.FC = () => {
                 </View>
               )}
 
-              {/* Department Input (Sign Up Only) */}
+              {/* Password Input */}
+              <View>
+                <Text className="text-gray-700 font-medium mb-2">Password</Text>
+                <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+                  <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder={isSignUp ? "Create a password (min 6 characters)" : "Enter your password"}
+                    secureTextEntry={!showPassword}
+                    className="flex-1 ml-3 text-gray-900"
+                    placeholderTextColor="#9CA3AF"
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)} className="p-1">
+                    <Ionicons 
+                      name={showPassword ? "eye-off" : "eye"} 
+                      size={20} 
+                      color="#9CA3AF" 
+                    />
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Confirm Password Input (Sign Up Only) */}
               {isSignUp && (
                 <View>
-                  <Text className="text-gray-700 font-medium mb-2">Department (Optional)</Text>
+                  <Text className="text-gray-700 font-medium mb-2">Confirm Password</Text>
                   <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
-                    <Ionicons name="briefcase" size={20} color="#9CA3AF" />
+                    <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
                     <TextInput
-                      value={department}
-                      onChangeText={setDepartment}
-                      placeholder="e.g., Engineering, Marketing"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      placeholder="Confirm your password"
+                      secureTextEntry={!showPassword}
                       className="flex-1 ml-3 text-gray-900"
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
                 </View>
+              )}
+
+              {/* Remember Me (Sign In Only) */}
+              {!isSignUp && (
+                <Pressable
+                  onPress={() => setRememberMe(!rememberMe)}
+                  className="flex-row items-center"
+                >
+                  <View className={cn(
+                    "w-5 h-5 rounded border-2 items-center justify-center mr-3",
+                    rememberMe ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                  )}>
+                    {rememberMe && (
+                      <Ionicons name="checkmark" size={14} color="white" />
+                    )}
+                  </View>
+                  <Text className="text-gray-700">Remember me</Text>
+                </Pressable>
               )}
             </View>
 
@@ -156,6 +281,16 @@ export const AuthScreen: React.FC = () => {
                 {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
               </Text>
             </Pressable>
+
+            {/* Forgot Password Link (Sign In Only) */}
+            {!isSignUp && (
+              <Pressable
+                onPress={() => setShowForgotPassword(true)}
+                className="mt-4"
+              >
+                <Text className="text-blue-600 text-center">Forgot Password?</Text>
+              </Pressable>
+            )}
 
             {/* Toggle Sign Up/Sign In */}
             <Pressable
@@ -229,10 +364,123 @@ export const AuthScreen: React.FC = () => {
             </View>
           </Animated.View>
 
+          {/* Demo Credentials Info */}
+          <Animated.View entering={FadeInDown.delay(500)} className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+            <Text className="text-blue-800 font-semibold mb-2">Demo Credentials:</Text>
+            <Text className="text-blue-700 text-sm">
+              • Admin: admin@demo.com / admin123{'\n'}
+              • Employee: sarah.johnson@gmail.com / demo123
+            </Text>
+          </Animated.View>
+
           {/* Bottom padding */}
           <View className="h-20" />
         </View>
       </ScrollView>
+
+      {/* Forgot Password Modal */}
+      <Modal visible={showForgotPassword} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <Text className="text-xl font-bold text-gray-900 mb-4">Forgot Password</Text>
+            <Text className="text-gray-600 mb-4">
+              Enter your email address and we'll send you a reset code.
+            </Text>
+            
+            <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center mb-6">
+              <Ionicons name="mail" size={20} color="#9CA3AF" />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className="flex-1 ml-3 text-gray-900"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+            
+            <View className="flex-row space-x-3">
+              <Pressable
+                onPress={() => setShowForgotPassword(false)}
+                className="flex-1 bg-gray-200 py-3 rounded-full"
+              >
+                <Text className="text-gray-800 text-center font-semibold">Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleForgotPassword}
+                disabled={loading}
+                className={cn(
+                  "flex-1 py-3 rounded-full",
+                  loading ? "bg-gray-400" : "bg-blue-600"
+                )}
+              >
+                <Text className="text-white text-center font-semibold">
+                  {loading ? 'Sending...' : 'Send Code'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Reset Password Modal */}
+      <Modal visible={showResetPassword} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <Text className="text-xl font-bold text-gray-900 mb-4">Reset Password</Text>
+            <Text className="text-gray-600 mb-4">
+              Enter the reset code and your new password.
+            </Text>
+            
+            <View className="space-y-4 mb-6">
+              <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+                <Ionicons name="key" size={20} color="#9CA3AF" />
+                <TextInput
+                  value={resetToken}
+                  onChangeText={setResetToken}
+                  placeholder="Enter reset code"
+                  className="flex-1 ml-3 text-gray-900"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              
+              <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+                <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+                <TextInput
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="New password (min 6 characters)"
+                  secureTextEntry={true}
+                  className="flex-1 ml-3 text-gray-900"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+            
+            <View className="flex-row space-x-3">
+              <Pressable
+                onPress={() => setShowResetPassword(false)}
+                className="flex-1 bg-gray-200 py-3 rounded-full"
+              >
+                <Text className="text-gray-800 text-center font-semibold">Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleResetPassword}
+                disabled={loading}
+                className={cn(
+                  "flex-1 py-3 rounded-full",
+                  loading ? "bg-gray-400" : "bg-blue-600"
+                )}
+              >
+                <Text className="text-white text-center font-semibold">
+                  {loading ? 'Resetting...' : 'Reset Password'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

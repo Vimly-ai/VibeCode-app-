@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,14 @@ const Tab = createBottomTabNavigator();
 
 export const AppNavigator: React.FC = () => {
   const { currentEmployee } = useEmployeeStore();
-  const { currentUser, isAuthenticated } = useAuthStore();
+  const { currentUser, isAuthenticated, autoSignIn } = useAuthStore();
+  
+  // Try auto sign-in on app load
+  useEffect(() => {
+    if (!isAuthenticated) {
+      autoSignIn();
+    }
+  }, [autoSignIn, isAuthenticated]);
   
   // Show auth screen if not authenticated
   if (!isAuthenticated || !currentUser) {

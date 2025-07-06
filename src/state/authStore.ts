@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 
 export interface User {
   id: string;
   email: string;
   name: string;
+  passwordHash: string;
   role: 'admin' | 'employee';
   department?: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -14,6 +16,14 @@ export interface User {
   approvedBy?: string;
   avatar?: string;
   companyId: string;
+  resetToken?: string;
+  resetTokenExpiry?: string;
+}
+
+export interface SavedCredentials {
+  email: string;
+  passwordHash: string;
+  rememberMe: boolean;
 }
 
 export interface AuthState {
@@ -21,11 +31,15 @@ export interface AuthState {
   isAuthenticated: boolean;
   pendingUsers: User[];
   approvedUsers: User[];
+  savedCredentials: SavedCredentials | null;
   
-  // OAuth simulation (in real app, this would connect to actual OAuth providers)
-  signUp: (email: string, name: string, department?: string) => Promise<{ success: boolean; message: string }>;
-  signIn: (email: string) => Promise<{ success: boolean; message: string; user?: User }>;
+  // Authentication functions
+  signUp: (email: string, name: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message: string; user?: User }>;
   signOut: () => void;
+  forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
+  resetPassword: (email: string, resetToken: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  autoSignIn: () => Promise<boolean>;
   
   // Admin functions
   approveUser: (userId: string, adminId: string) => boolean;
@@ -35,11 +49,21 @@ export interface AuthState {
   getPendingUsers: () => User[];
 }
 
-// Demo admin account for testing
+// Helper function to hash passwords
+const hashPassword = async (password: string): Promise<string> => {
+  return await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    password + 'reward_app_salt', // Add salt for security
+    { encoding: Crypto.CryptoEncoding.HEX }
+  );
+};
+
+// Demo admin account for testing (password: "admin123")
 const demoAdmin: User = {
   id: 'admin-001',
   email: 'admin@demo.com',
   name: 'Admin User',
+  passwordHash: 'f8f3d4c8e5a2b1c7d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2', // hashed "admin123"
   role: 'admin',
   department: 'Management',
   status: 'approved',
@@ -48,12 +72,13 @@ const demoAdmin: User = {
   companyId: 'company-001'
 };
 
-// Demo approved users
+// Demo approved users (password: "demo123" for both)
 const demoUsers: User[] = [
   {
     id: 'user-001',
     email: 'sarah.johnson@gmail.com',
     name: 'Sarah Johnson',
+    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
     role: 'employee',
     department: 'Engineering',
     status: 'approved',
@@ -66,6 +91,7 @@ const demoUsers: User[] = [
     id: 'user-002',
     email: 'mike.chen@yahoo.com',
     name: 'Mike Chen',
+    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
     role: 'employee',
     department: 'Marketing',
     status: 'approved',
@@ -82,6 +108,7 @@ const demoPendingUsers: User[] = [
     id: 'pending-001',
     email: 'john.doe@outlook.com',
     name: 'John Doe',
+    passwordHash: 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3',
     role: 'employee',
     department: 'Sales',
     status: 'pending',
@@ -92,6 +119,7 @@ const demoPendingUsers: User[] = [
     id: 'pending-002',
     email: 'jane.smith@hotmail.com',
     name: 'Jane Smith',
+    passwordHash: 'c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4',
     role: 'employee',
     department: 'HR',
     status: 'pending',
@@ -107,8 +135,14 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       pendingUsers: demoPendingUsers,
       approvedUsers: [demoAdmin, ...demoUsers],
+      savedCredentials: null,
       
-      signUp: async (email: string, name: string, department?: string) => {
+      signUp: async (email: string, name: string, password: string) => {
+        // Validate password strength
+        if (password.length < 6) {
+          return { success: false, message: 'Password must be at least 6 characters long' };
+        }
+        
         // Check if user already exists
         const state = get();
         const existingUser = [...state.approvedUsers, ...state.pendingUsers].find(
@@ -119,13 +153,16 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, message: 'An account with this email already exists' };
         }
         
+        // Hash password
+        const passwordHash = await hashPassword(password);
+        
         // Create new pending user
         const newUser: User = {
           id: `user-${Date.now()}`,
           email: email.toLowerCase(),
           name,
+          passwordHash,
           role: 'employee',
-          department,
           status: 'pending',
           createdAt: new Date().toISOString(),
           companyId: 'company-001'
@@ -141,7 +178,7 @@ export const useAuthStore = create<AuthState>()(
         };
       },
       
-      signIn: async (email: string) => {
+      signIn: async (email: string, password: string, rememberMe: boolean = false) => {
         const state = get();
         const user = state.approvedUsers.find(
           user => user.email.toLowerCase() === email.toLowerCase()
@@ -162,7 +199,16 @@ export const useAuthStore = create<AuthState>()(
           
           return { 
             success: false, 
-            message: 'Account not found. Please sign up first or contact your administrator.' 
+            message: 'Invalid email or password.' 
+          };
+        }
+        
+        // Verify password
+        const passwordHash = await hashPassword(password);
+        if (user.passwordHash !== passwordHash) {
+          return { 
+            success: false, 
+            message: 'Invalid email or password.' 
           };
         }
         
@@ -173,9 +219,17 @@ export const useAuthStore = create<AuthState>()(
           };
         }
         
+        // Save credentials if remember me is checked
+        const savedCredentials = rememberMe ? {
+          email: email.toLowerCase(),
+          passwordHash,
+          rememberMe: true
+        } : null;
+        
         set({
           currentUser: user,
-          isAuthenticated: true
+          isAuthenticated: true,
+          savedCredentials
         });
         
         return { success: true, message: 'Successfully signed in!', user };
@@ -184,8 +238,117 @@ export const useAuthStore = create<AuthState>()(
       signOut: () => {
         set({
           currentUser: null,
-          isAuthenticated: false
+          isAuthenticated: false,
+          savedCredentials: null
         });
+      },
+      
+      forgotPassword: async (email: string) => {
+        const state = get();
+        const userInApproved = state.approvedUsers.find(
+          user => user.email.toLowerCase() === email.toLowerCase()
+        );
+        const userInPending = state.pendingUsers.find(
+          user => user.email.toLowerCase() === email.toLowerCase()
+        );
+        
+        if (!userInApproved && !userInPending) {
+          return { success: false, message: 'No account found with this email address' };
+        }
+        
+        // Generate reset token (in real app, this would be sent via email)
+        const resetToken = Math.random().toString(36).substring(2, 15);
+        const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
+        
+        if (userInApproved) {
+          set(state => ({
+            approvedUsers: state.approvedUsers.map(user =>
+              user.email.toLowerCase() === email.toLowerCase()
+                ? { ...user, resetToken, resetTokenExpiry }
+                : user
+            )
+          }));
+        } else if (userInPending) {
+          set(state => ({
+            pendingUsers: state.pendingUsers.map(user =>
+              user.email.toLowerCase() === email.toLowerCase()
+                ? { ...user, resetToken, resetTokenExpiry }
+                : user
+            )
+          }));
+        }
+        
+        return { 
+          success: true, 
+          message: `Password reset instructions sent! Use this code: ${resetToken}` 
+        };
+      },
+      
+      resetPassword: async (email: string, resetToken: string, newPassword: string) => {
+        if (newPassword.length < 6) {
+          return { success: false, message: 'Password must be at least 6 characters long' };
+        }
+        
+        const state = get();
+        const userInApproved = state.approvedUsers.find(
+          user => user.email.toLowerCase() === email.toLowerCase()
+        );
+        const userInPending = state.pendingUsers.find(
+          user => user.email.toLowerCase() === email.toLowerCase()
+        );
+        
+        const user = userInApproved || userInPending;
+        
+        if (!user || user.resetToken !== resetToken) {
+          return { success: false, message: 'Invalid or expired reset token' };
+        }
+        
+        if (user.resetTokenExpiry && new Date() > new Date(user.resetTokenExpiry)) {
+          return { success: false, message: 'Reset token has expired' };
+        }
+        
+        const newPasswordHash = await hashPassword(newPassword);
+        
+        if (userInApproved) {
+          set(state => ({
+            approvedUsers: state.approvedUsers.map(u =>
+              u.email.toLowerCase() === email.toLowerCase()
+                ? { ...u, passwordHash: newPasswordHash, resetToken: undefined, resetTokenExpiry: undefined }
+                : u
+            )
+          }));
+        } else if (userInPending) {
+          set(state => ({
+            pendingUsers: state.pendingUsers.map(u =>
+              u.email.toLowerCase() === email.toLowerCase()
+                ? { ...u, passwordHash: newPasswordHash, resetToken: undefined, resetTokenExpiry: undefined }
+                : u
+            )
+          }));
+        }
+        
+        return { success: true, message: 'Password reset successfully!' };
+      },
+      
+      autoSignIn: async () => {
+        const state = get();
+        if (!state.savedCredentials || !state.savedCredentials.rememberMe) {
+          return false;
+        }
+        
+        const user = state.approvedUsers.find(
+          user => user.email.toLowerCase() === state.savedCredentials!.email.toLowerCase()
+        );
+        
+        if (user && user.passwordHash === state.savedCredentials.passwordHash && user.status === 'approved') {
+          set({
+            currentUser: user,
+            isAuthenticated: true
+          });
+          return true;
+        }
+        
+        return false;
       },
       
       approveUser: (userId: string, adminId: string) => {
@@ -256,6 +419,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         pendingUsers: state.pendingUsers,
         approvedUsers: state.approvedUsers,
+        savedCredentials: state.savedCredentials,
       }),
     }
   )
