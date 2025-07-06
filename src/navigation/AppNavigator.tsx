@@ -18,7 +18,7 @@ const Tab = createBottomTabNavigator();
 
 export const AppNavigator: React.FC = () => {
   const { currentEmployee } = useEmployeeStore();
-  const { currentUser, isAuthenticated, autoSignIn } = useAuthStore();
+  const { currentUser, isAuthenticated, autoSignIn, getPendingUsers } = useAuthStore();
   
   // Try auto sign-in on app load
   useEffect(() => {
@@ -84,6 +84,13 @@ export const AppNavigator: React.FC = () => {
           <Tab.Screen 
             name="Employees" 
             component={EmployeeManagementScreen}
+            options={{
+              tabBarBadge: getPendingUsers().length > 0 ? getPendingUsers().length : undefined,
+              tabBarBadgeStyle: {
+                backgroundColor: '#F59E0B',
+                color: 'white',
+              },
+            }}
           />
           <Tab.Screen 
             name="QR Codes" 

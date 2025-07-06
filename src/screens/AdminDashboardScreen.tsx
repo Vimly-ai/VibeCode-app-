@@ -8,12 +8,14 @@ import { useAuthStore } from '../state/authStore';
 import { useEmployeeStore } from '../state/employeeStore';
 import { format, parseISO, subDays, subWeeks, subMonths } from 'date-fns';
 import { Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { cn } from '../utils/cn';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export const AdminDashboardScreen: React.FC = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'quarter'>('week');
+  const navigation = useNavigation();
   const { currentUser, getAllUsers, getPendingUsers } = useAuthStore();
   const { employees, getLeaderboard, approveRewardRedemption } = useEmployeeStore();
   
@@ -113,18 +115,35 @@ export const AdminDashboardScreen: React.FC = () => {
             </Animated.View>
             
             <Animated.View entering={FadeInRight.delay(200)} className="flex-1">
-              <LinearGradient
-                colors={['#F59E0B', '#D97706']}
-                className="p-4 rounded-xl"
+              <Pressable
+                onPress={() => navigation.navigate('Employees' as never)}
+                className="flex-1"
               >
-                <View className="flex-row items-center justify-between">
-                  <View>
-                    <Text className="text-orange-100 text-sm">Pending</Text>
-                    <Text className="text-white text-2xl font-bold">{pendingApprovals}</Text>
+                <LinearGradient
+                  colors={pendingApprovals > 0 ? ['#F59E0B', '#D97706'] : ['#9CA3AF', '#6B7280']}
+                  className="p-4 rounded-xl"
+                >
+                  <View className="flex-row items-center justify-between">
+                    <View>
+                      <Text className="text-orange-100 text-sm">Pending Approvals</Text>
+                      <Text className="text-white text-2xl font-bold">{pendingApprovals}</Text>
+                      {pendingApprovals > 0 ? (
+                        <Text className="text-orange-100 text-xs mt-1">Tap to review →</Text>
+                      ) : (
+                        <Text className="text-orange-100 text-xs mt-1">All caught up!</Text>
+                      )}
+                    </View>
+                    <View className="items-center">
+                      <Ionicons name="time" size={24} color="white" />
+                      {pendingApprovals > 0 && (
+                        <View className="bg-white/20 rounded-full w-6 h-6 items-center justify-center mt-1">
+                          <Text className="text-white text-xs font-bold">!</Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
-                  <Ionicons name="time" size={24} color="white" />
-                </View>
-              </LinearGradient>
+                </LinearGradient>
+              </Pressable>
             </Animated.View>
           </View>
         </View>
