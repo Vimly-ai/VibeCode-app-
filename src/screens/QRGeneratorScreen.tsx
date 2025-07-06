@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as Clipboard from 'expo-clipboard';
 import { useAuthStore } from '../state/authStore';
 import { getQRCodeData, isWithinValidTimeWindow, QR_CONFIG, ROTATION_STRATEGIES, MANUAL_QR_VERSION } from '../utils/qrCodeConfig';
 
@@ -35,19 +36,27 @@ export const QRGeneratorScreen: React.FC = () => {
     }
   };
   
-  const handleCopyURL = () => {
-    // In a real app, you'd copy to clipboard
-    Alert.alert(
-      'QR Code URL',
-      qrData.qrData,
-      [
-        { text: 'Close' },
-        { 
-          text: 'Share', 
-          onPress: handleShareQRCode 
-        }
-      ]
-    );
+  const handleCopyURL = async () => {
+    try {
+      await Clipboard.setStringAsync(qrData.qrData);
+      Alert.alert(
+        'Copied!',
+        'QR code URL has been copied to your clipboard.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Copy Failed',
+        'Unable to copy to clipboard. Here\'s the URL:\n\n' + qrData.qrData,
+        [
+          { text: 'Close' },
+          { 
+            text: 'Share', 
+            onPress: handleShareQRCode 
+          }
+        ]
+      );
+    }
   };
   
   return (
@@ -132,9 +141,12 @@ export const QRGeneratorScreen: React.FC = () => {
                 onPress={handleCopyURL}
                 className="bg-blue-600 py-4 rounded-xl"
               >
-                <Text className="text-white text-center font-semibold text-lg">
-                  Copy QR Code URL
-                </Text>
+                <View className="flex-row items-center justify-center">
+                  <Ionicons name="copy" size={20} color="white" />
+                  <Text className="text-white text-center font-semibold text-lg ml-2">
+                    Copy to Clipboard
+                  </Text>
+                </View>
               </Pressable>
               
               <Pressable
