@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
-import { getQRCodeData, isWithinValidTimeWindow, QR_CONFIG } from '../utils/qrCodeConfig';
+import { getQRCodeData, isWithinValidTimeWindow, QR_CONFIG, ROTATION_STRATEGIES } from '../utils/qrCodeConfig';
 
 export const QRGeneratorScreen: React.FC = () => {
   const [qrGenerated, setQrGenerated] = useState(false);
@@ -93,8 +93,16 @@ export const QRGeneratorScreen: React.FC = () => {
             
             <View className="space-y-3 mb-6">
               <View className="flex-row justify-between">
-                <Text className="text-gray-600">Valid Date:</Text>
-                <Text className="font-semibold text-gray-900">{qrData.displayInfo.validDate}</Text>
+                <Text className="text-gray-600">Valid Period:</Text>
+                <Text className="font-semibold text-gray-900">{qrData.displayInfo.validPeriod}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600">Rotation:</Text>
+                <Text className="font-semibold text-blue-600 capitalize">{qrData.displayInfo.rotationStrategy}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600">Expires:</Text>
+                <Text className="font-semibold text-orange-600">{qrData.displayInfo.expirationInfo}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Time Window:</Text>
@@ -103,10 +111,6 @@ export const QRGeneratorScreen: React.FC = () => {
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Timezone:</Text>
                 <Text className="font-semibold text-gray-900">{qrData.displayInfo.timezone}</Text>
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-gray-600">Security:</Text>
-                <Text className="font-semibold text-green-600">Daily Token</Text>
               </View>
             </View>
             
@@ -190,8 +194,33 @@ export const QRGeneratorScreen: React.FC = () => {
           </View>
         </Animated.View>
         
-        {/* Generate Instructions */}
+        {/* Rotation Strategy Info */}
         <Animated.View entering={FadeInDown.delay(500)} className="px-6 mb-6">
+          <View className="bg-purple-50 border border-purple-200 rounded-2xl p-6">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="refresh" size={24} color="#8B5CF6" />
+              <Text className="text-lg font-semibold text-purple-800 ml-2">
+                Current Strategy: {ROTATION_STRATEGIES[QR_CONFIG.rotationStrategy as keyof typeof ROTATION_STRATEGIES].name}
+              </Text>
+            </View>
+            <Text className="text-purple-800 mb-3">
+              {ROTATION_STRATEGIES[QR_CONFIG.rotationStrategy as keyof typeof ROTATION_STRATEGIES].description}
+            </Text>
+            <View className="space-y-2">
+              <Text className="text-purple-700 font-medium">✅ Pros:</Text>
+              {ROTATION_STRATEGIES[QR_CONFIG.rotationStrategy as keyof typeof ROTATION_STRATEGIES].pros.map((pro, index) => (
+                <Text key={index} className="text-purple-700 text-sm ml-4">• {pro}</Text>
+              ))}
+              <Text className="text-purple-700 font-medium mt-2">⚠️ Considerations:</Text>
+              {ROTATION_STRATEGIES[QR_CONFIG.rotationStrategy as keyof typeof ROTATION_STRATEGIES].cons.map((con, index) => (
+                <Text key={index} className="text-purple-700 text-sm ml-4">• {con}</Text>
+              ))}
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* Generate Instructions */}
+        <Animated.View entering={FadeInDown.delay(600)} className="px-6 mb-6">
           <View className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
             <View className="flex-row items-center mb-3">
               <Ionicons name="construct" size={24} color="#F59E0B" />
@@ -207,7 +236,10 @@ export const QRGeneratorScreen: React.FC = () => {
               <Text className="text-yellow-700 text-sm">• Any standard QR generator tool</Text>
             </View>
             <Text className="text-yellow-800 mt-3 font-medium">
-              💡 Generate a new QR code daily using today's URL for maximum security!
+              💡 {QR_CONFIG.rotationStrategy === 'daily' ? 'Generate a new QR code daily' : 
+                   QR_CONFIG.rotationStrategy === 'weekly' ? 'Generate a new QR code every Monday' :
+                   QR_CONFIG.rotationStrategy === 'monthly' ? 'Generate a new QR code monthly' :
+                   'Generate QR codes as needed'} using the current URL!
             </Text>
           </View>
         </Animated.View>
