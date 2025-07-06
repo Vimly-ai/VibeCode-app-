@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { format, parseISO } from 'date-fns';
 import { useEmployeeStore } from '../state/employeeStore';
+import { useAuthStore } from '../state/authStore';
 import { cn } from '../utils/cn';
 
 export const ProfileScreen: React.FC = () => {
@@ -13,6 +14,7 @@ export const ProfileScreen: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const { currentEmployee, initializeEmployee } = useEmployeeStore();
+  const { currentUser, signOut } = useAuthStore();
   
   const handleCreateProfile = () => {
     if (!name.trim() || !email.trim()) {
@@ -30,8 +32,19 @@ export const ProfileScreen: React.FC = () => {
     Alert.alert('Success', 'Profile created successfully!');
   };
   
-  // If no employee exists, show onboarding
-  if (!currentEmployee) {
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', onPress: signOut }
+      ]
+    );
+  };
+  
+  // If no employee exists but user is authenticated, show onboarding
+  if (!currentEmployee && currentUser) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-1 px-6">
@@ -152,82 +165,100 @@ export const ProfileScreen: React.FC = () => {
         {/* Profile Header */}
         <Animated.View entering={FadeInDown.delay(100)}>
           <LinearGradient
-            colors={['#3B82F6', '#1D4ED8']}
+            colors={currentUser?.role === 'admin' ? ['#8B5CF6', '#7C3AED'] : ['#3B82F6', '#1D4ED8']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             className="rounded-2xl p-6 mb-6"
           >
             <View className="flex-row items-center">
               <View className="w-16 h-16 bg-white/20 rounded-full items-center justify-center mr-4">
-                <Text className="text-white font-bold text-xl">
-                  {currentEmployee.name.split(' ').map(n => n[0]).join('')}
-                </Text>
+                {currentUser?.role === 'admin' ? (
+                  <Ionicons name="shield-checkmark" size={28} color="white" />
+                ) : (
+                  <Text className="text-white font-bold text-xl">
+                    {(currentEmployee?.name || currentUser?.name || '').split(' ').map(n => n[0]).join('')}
+                  </Text>
+                )}
               </View>
               <View className="flex-1">
                 <Text className="text-white font-bold text-xl">
-                  {currentEmployee.name}
+                  {currentEmployee?.name || currentUser?.name}
                 </Text>
                 <Text className="text-blue-100 mt-1">
-                  {currentEmployee.email}
+                  {currentEmployee?.email || currentUser?.email}
                 </Text>
+                <View className="flex-row items-center mt-1">
+                  <View className="bg-white/20 px-2 py-1 rounded-full">
+                    <Text className="text-white text-xs font-semibold capitalize">
+                      {currentUser?.role || 'Employee'}
+                    </Text>
+                  </View>
+                  {currentUser?.department && (
+                    <Text className="text-blue-100 text-sm ml-2">
+                      {currentUser.department}
+                    </Text>
+                  )}
+                </View>
                 <Text className="text-blue-100 text-sm mt-1">
-                  Member since {format(parseISO(currentEmployee.checkIns[0]?.timestamp || new Date().toISOString()), 'MMM yyyy')}
+                  Member since {format(parseISO(currentEmployee?.checkIns[0]?.timestamp || currentUser?.createdAt || new Date().toISOString()), 'MMM yyyy')}
                 </Text>
               </View>
             </View>
           </LinearGradient>
         </Animated.View>
         
-        {/* Stats Overview */}
-        <Animated.View entering={FadeInDown.delay(200)} className="mb-6">
-          <View className="bg-white rounded-2xl p-6 shadow-sm">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">Statistics</Text>
-            <View className="space-y-4">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="diamond" size={20} color="#3B82F6" />
-                  <Text className="text-gray-700 ml-2">Total Points</Text>
+        {/* Stats Overview - Only show for employees with data */}
+        {currentEmployee && currentUser?.role === 'employee' && (
+          <Animated.View entering={FadeInDown.delay(200)} className="mb-6">
+            <View className="bg-white rounded-2xl p-6 shadow-sm">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">Statistics</Text>
+              <View className="space-y-4">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons name="diamond" size={20} color="#3B82F6" />
+                    <Text className="text-gray-700 ml-2">Total Points</Text>
+                  </View>
+                  <Text className="font-semibold text-gray-900">
+                    {currentEmployee.totalPoints}
+                  </Text>
                 </View>
-                <Text className="font-semibold text-gray-900">
-                  {currentEmployee.totalPoints}
-                </Text>
-              </View>
-              
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="flame" size={20} color="#F59E0B" />
-                  <Text className="text-gray-700 ml-2">Current Streak</Text>
+                
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons name="flame" size={20} color="#F59E0B" />
+                    <Text className="text-gray-700 ml-2">Current Streak</Text>
+                  </View>
+                  <Text className="font-semibold text-gray-900">
+                    {currentEmployee.currentStreak} days
+                  </Text>
                 </View>
-                <Text className="font-semibold text-gray-900">
-                  {currentEmployee.currentStreak} days
-                </Text>
-              </View>
-              
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="trophy" size={20} color="#10B981" />
-                  <Text className="text-gray-700 ml-2">Longest Streak</Text>
+                
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons name="trophy" size={20} color="#10B981" />
+                    <Text className="text-gray-700 ml-2">Longest Streak</Text>
+                  </View>
+                  <Text className="font-semibold text-gray-900">
+                    {currentEmployee.longestStreak} days
+                  </Text>
                 </View>
-                <Text className="font-semibold text-gray-900">
-                  {currentEmployee.longestStreak} days
-                </Text>
-              </View>
-              
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="calendar" size={20} color="#8B5CF6" />
-                  <Text className="text-gray-700 ml-2">Total Check-ins</Text>
+                
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <Ionicons name="calendar" size={20} color="#8B5CF6" />
+                    <Text className="text-gray-700 ml-2">Total Check-ins</Text>
+                  </View>
+                  <Text className="font-semibold text-gray-900">
+                    {currentEmployee.checkIns.length}
+                  </Text>
                 </View>
-                <Text className="font-semibold text-gray-900">
-                  {currentEmployee.checkIns.length}
-                </Text>
               </View>
             </View>
-          </View>
-        </Animated.View>
+          </Animated.View>
+        )}
         
-        {/* Badges */}
-        {currentEmployee.badges.length > 0 && (
+        {/* Badges - Only show for employees */}
+        {currentEmployee && currentEmployee.badges.length > 0 && (
           <Animated.View entering={FadeInDown.delay(300)} className="mb-6">
             <View className="bg-white rounded-2xl p-6 shadow-sm">
               <Text className="text-lg font-semibold text-gray-900 mb-4">
@@ -257,8 +288,8 @@ export const ProfileScreen: React.FC = () => {
           </Animated.View>
         )}
         
-        {/* Recent Rewards */}
-        {currentEmployee.rewardsRedeemed.length > 0 && (
+        {/* Recent Rewards - Only show for employees */}
+        {currentEmployee && currentEmployee.rewardsRedeemed.length > 0 && (
           <Animated.View entering={FadeInDown.delay(400)} className="mb-6">
             <View className="bg-white rounded-2xl p-6 shadow-sm">
               <Text className="text-lg font-semibold text-gray-900 mb-4">
@@ -317,6 +348,14 @@ export const ProfileScreen: React.FC = () => {
                 <View className="flex-row items-center">
                   <Ionicons name="document-text" size={20} color="#6B7280" />
                   <Text className="text-gray-700 ml-3">Terms & Privacy</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </Pressable>
+              
+              <Pressable onPress={handleSignOut} className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <Ionicons name="log-out" size={20} color="#EF4444" />
+                  <Text className="text-red-600 ml-3">Sign Out</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </Pressable>
