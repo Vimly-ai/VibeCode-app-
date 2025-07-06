@@ -407,43 +407,173 @@ export const EmployeeManagementScreen: React.FC = () => {
         {/* Analytics */}
         {activeTab === 'analytics' && (
           <View className="space-y-6">
+            {/* Attendance Trends */}
             <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">Department Breakdown</Text>
-              <View className="space-y-3">
-                {Object.entries(
-                  employeesWithData.reduce((acc, emp) => {
-                    const dept = emp.department || 'Unspecified';
-                    acc[dept] = (acc[dept] || 0) + 1;
-                    return acc;
-                  }, {} as Record<string, number>)
-                ).map(([dept, count]) => (
-                  <View key={dept} className="flex-row items-center justify-between">
-                    <Text className="text-gray-700">{dept}</Text>
-                    <Text className="font-semibold text-gray-900">{count}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-            
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</Text>
+              <Text className="text-lg font-semibold text-gray-900 mb-4">📊 Attendance Trends</Text>
               <View className="space-y-4">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Average Points per Employee</Text>
-                  <Text className="font-semibold text-gray-900">
-                    {Math.round(employeesWithData.reduce((sum, emp) => sum + emp.totalPoints, 0) / employeesWithData.length) || 0}
+                  <Text className="text-gray-700">Today's Check-in Rate</Text>
+                  <Text className="font-semibold text-green-600">
+                    {Math.round((employeesWithData.filter(emp => 
+                      emp.checkIns.some(ci => 
+                        format(parseISO(ci.timestamp), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                      )
+                    ).length / Math.max(employeesWithData.length, 1)) * 100)}%
                   </Text>
                 </View>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Highest Streak</Text>
-                  <Text className="font-semibold text-gray-900">
+                  <Text className="text-gray-700">This Week's Average</Text>
+                  <Text className="font-semibold text-blue-600">
+                    {Math.round((employeesWithData.reduce((sum, emp) => sum + emp.weeklyPoints, 0) / Math.max(employeesWithData.length, 1)) * 10) / 10} pts/person
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Early Birds This Week</Text>
+                  <Text className="font-semibold text-orange-600">
+                    {employeesWithData.filter(emp => 
+                      emp.checkIns.filter(ci => ci.type === 'early').length >= 3
+                    ).length} employees
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Problem Areas */}
+            <View className="bg-white rounded-xl p-6 shadow-sm">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">⚠️ Areas Needing Attention</Text>
+              <View className="space-y-4">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Employees with Low Consistency (&lt;70%)</Text>
+                  <Text className="font-semibold text-red-600">
+                    {employeesWithData.filter(emp => {
+                      const totalCheckins = emp.checkIns.length;
+                      const goodCheckins = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      return totalCheckins > 0 && (goodCheckins / totalCheckins * 100) < 70;
+                    }).length} employees
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Lost Streaks This Week</Text>
+                  <Text className="font-semibold text-yellow-600">
+                    {employeesWithData.filter(emp => emp.longestStreak > emp.currentStreak + 3).length} employees
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">No Check-ins Last 3 Days</Text>
+                  <Text className="font-semibold text-red-600">
+                    {employeesWithData.filter(emp => {
+                      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+                      return !emp.checkIns.some(ci => parseISO(ci.timestamp) > threeDaysAgo);
+                    }).length} employees
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Performance Insights */}
+            <View className="bg-white rounded-xl p-6 shadow-sm">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">🏆 Team Performance</Text>
+              <View className="space-y-4">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Top Performer (Most Points)</Text>
+                  <Text className="font-semibold text-green-600">
+                    {employeesWithData.length > 0 ? 
+                      employeesWithData.reduce((top, emp) => emp.totalPoints > top.totalPoints ? emp : top).name.split(' ')[0]
+                      : 'None'
+                    }
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Longest Current Streak</Text>
+                  <Text className="font-semibold text-orange-600">
                     {Math.max(...employeesWithData.map(emp => emp.currentStreak), 0)} days
                   </Text>
                 </View>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Total Check-ins</Text>
-                  <Text className="font-semibold text-gray-900">
-                    {employeesWithData.reduce((sum, emp) => sum + emp.checkIns.length, 0)}
+                  <Text className="text-gray-700">Team Consistency Average</Text>
+                  <Text className={cn(
+                    "font-semibold",
+                    employeesWithData.length > 0 && 
+                    (employeesWithData.reduce((sum, emp) => {
+                      const total = emp.checkIns.length;
+                      const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      return sum + (total > 0 ? good / total * 100 : 0);
+                    }, 0) / employeesWithData.length) >= 80 ? "text-green-600" : 
+                    (employeesWithData.reduce((sum, emp) => {
+                      const total = emp.checkIns.length;
+                      const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                      return sum + (total > 0 ? good / total * 100 : 0);
+                    }, 0) / employeesWithData.length) >= 60 ? "text-yellow-600" : "text-red-600"
+                  )}>
+                    {employeesWithData.length > 0 ? 
+                      Math.round(employeesWithData.reduce((sum, emp) => {
+                        const total = emp.checkIns.length;
+                        const good = emp.checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                        return sum + (total > 0 ? good / total * 100 : 0);
+                      }, 0) / employeesWithData.length) + '%'
+                      : '0%'
+                    }
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Weekly Patterns */}
+            <View className="bg-white rounded-xl p-6 shadow-sm">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">📅 Weekly Patterns</Text>
+              <View className="space-y-3">
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+                  const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].indexOf(day) + 1;
+                  const dayCheckIns = employeesWithData.flatMap(emp => 
+                    emp.checkIns.filter(ci => {
+                      const checkInDay = parseISO(ci.timestamp).getDay();
+                      return checkInDay === dayIndex;
+                    })
+                  );
+                  const lateCount = dayCheckIns.filter(ci => ci.type === 'late').length;
+                  const totalCount = dayCheckIns.length;
+                  const latePercentage = totalCount > 0 ? Math.round((lateCount / totalCount) * 100) : 0;
+                  
+                  return (
+                    <View key={day} className="flex-row items-center justify-between">
+                      <Text className="text-gray-700">{day} Late Rate</Text>
+                      <Text className={cn(
+                        "font-semibold",
+                        latePercentage <= 10 ? "text-green-600" :
+                        latePercentage <= 25 ? "text-yellow-600" : "text-red-600"
+                      )}>
+                        {latePercentage}% ({lateCount}/{totalCount})
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Reward System Health */}
+            <View className="bg-white rounded-xl p-6 shadow-sm">
+              <Text className="text-lg font-semibold text-gray-900 mb-4">💎 Reward System Health</Text>
+              <View className="space-y-4">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Total Points Distributed</Text>
+                  <Text className="font-semibold text-blue-600">
+                    {employeesWithData.reduce((sum, emp) => sum + emp.totalPoints, 0).toLocaleString()}
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Pending Reward Approvals</Text>
+                  <Text className="font-semibold text-orange-600">
+                    {employeesWithData.reduce((sum, emp) => 
+                      sum + emp.rewardsRedeemed.filter(r => r.status === 'pending').length, 0
+                    )}
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-gray-700">Points Spent on Rewards</Text>
+                  <Text className="font-semibold text-green-600">
+                    {employeesWithData.reduce((sum, emp) => 
+                      sum + emp.rewardsRedeemed.reduce((rewardSum, r) => rewardSum + r.pointsCost, 0), 0
+                    ).toLocaleString()}
                   </Text>
                 </View>
               </View>
