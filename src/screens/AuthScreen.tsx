@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
 import { cn } from '../utils/cn';
-import * as Crypto from 'expo-crypto';
 
 export const AuthScreen: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -145,39 +144,35 @@ export const AuthScreen: React.FC = () => {
 
   const handleDemoLogin = async () => {
     setLoading(true);
-    const result = await signIn('admin@demo.com', 'admin123');
-    if (!result.success) {
-      Alert.alert('Error', result.message);
+    try {
+      const result = await signIn('admin@demo.com', 'admin123');
+      if (!result.success) {
+        Alert.alert('Login Failed', `Error: ${result.message}`);
+      } else {
+        Alert.alert('Success', 'Admin login successful!');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Login error: ${error.message}`);
     }
     setLoading(false);
   };
 
   const handleEmployeeLogin = async () => {
     setLoading(true);
-    const result = await signIn('sarah.johnson@gmail.com', 'demo123');
-    if (!result.success) {
-      Alert.alert('Error', result.message);
+    try {
+      const result = await signIn('sarah.johnson@gmail.com', 'demo123');
+      if (!result.success) {
+        Alert.alert('Login Failed', `Error: ${result.message}`);
+      } else {
+        Alert.alert('Success', 'Employee login successful!');
+      }
+    } catch (error) {
+      Alert.alert('Error', `Login error: ${error.message}`);
     }
     setLoading(false);
   };
 
-  const debugHashes = async () => {
-    try {
-      const adminHash = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        'admin123' + 'reward_app_salt',
-        { encoding: Crypto.CryptoEncoding.HEX }
-      );
-      const demoHash = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        'demo123' + 'reward_app_salt',
-        { encoding: Crypto.CryptoEncoding.HEX }
-      );
-      Alert.alert('Debug Hashes', `Admin: ${adminHash}\nDemo: ${demoHash}`);
-    } catch (error) {
-      Alert.alert('Error', 'Could not generate hashes: ' + error.message);
-    }
-  };
+
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -362,14 +357,6 @@ export const AuthScreen: React.FC = () => {
                   </Text>
                 </Pressable>
               </View>
-              <Pressable
-                onPress={debugHashes}
-                className="bg-red-600 px-4 py-3 rounded-full mt-3"
-              >
-                <Text className="text-white font-semibold text-center">
-                  Debug: Show Correct Hashes
-                </Text>
-              </Pressable>
             </View>
           </Animated.View>
 

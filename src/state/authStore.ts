@@ -196,7 +196,6 @@ export const useAuthStore = create<AuthState>()(
         
         // Verify password
         const passwordHash = await hashPassword(password);
-        console.log('Login attempt:', { email, password, generatedHash: passwordHash, storedHash: user.passwordHash });
         if (user.passwordHash !== passwordHash) {
           return { 
             success: false, 
@@ -415,6 +414,25 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Ensure demo accounts exist and have correct data
+          const demoAccountsExist = state.approvedUsers.some(user => user.id === 'admin-001');
+          
+          if (!demoAccountsExist) {
+            // Add demo accounts if they don't exist
+            state.approvedUsers = [demoAdmin, ...demoUsers, ...state.approvedUsers];
+          } else {
+            // Update existing demo accounts with correct password hashes
+            state.approvedUsers = state.approvedUsers.map(user => {
+              if (user.id === 'admin-001') {
+                return { ...user, ...demoAdmin };
+              } else if (user.id === 'user-001' || user.id === 'user-002' || user.id === 'user-003') {
+                const demoUser = demoUsers.find(du => du.id === user.id);
+                return demoUser ? { ...user, ...demoUser } : user;
+              }
+              return user;
+            });
+          }
+          
           // Ensure only the demo admin has admin role - reset any others to employee
           state.approvedUsers = state.approvedUsers.map(user => ({
             ...user,
