@@ -69,7 +69,7 @@ export const DemoQRCode: React.FC<DemoQRCodeProps> = ({ visible, onClose, onChec
                 <Text className="text-blue-700 text-xs">⏰ 7:45-8:00 AM: +1 point</Text>
                 <Text className="text-blue-700 text-xs">🟨 8:00-9:00 AM: +0 points</Text>
                 <Text className="text-blue-700 text-xs">🚫 Outside window: Blocked</Text>
-              </div>
+              </View>
             </View>
             
             {/* Mock QR Code Visual */}
