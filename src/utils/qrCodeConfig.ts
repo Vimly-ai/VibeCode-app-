@@ -207,7 +207,7 @@ export const isWithinValidTimeWindow = (): {
     if (currentMinutes < startMinutes) {
       reason = `Check-in window hasn't opened yet. Please wait until ${QR_CONFIG.validTimeWindow.start} AM MST.`;
     } else {
-      reason = "You missed the window, not the opportunity, tomorrow's yours.";
+      reason = "Check-in Window Missed\nYou didn't catch today's check-in, but no worries, tomorrow is a new opportunity.";
     }
     
     return {

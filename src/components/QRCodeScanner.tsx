@@ -104,30 +104,15 @@ export const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onClose, onScanSuc
     
     setScanned(true);
     
-    console.log('Scanned QR Data:', data);
-    
-    // Debug: Show what we scanned
-    Alert.alert(
-      'Debug - Scanned Data',
-      `Scanned: ${data.substring(0, 100)}${data.length > 100 ? '...' : ''}`,
-      [
-        { text: 'Cancel', onPress: () => setScanned(false) },
-        { 
-          text: 'Continue', 
-          onPress: () => {
-            // Validate QR code using proper validation logic
-            if (data.includes('rewards.company.com/checkin')) {
-              const result = checkIn(currentEmployee.id, data);
-              onScanSuccess(result);
-            } else {
-              Alert.alert('Invalid QR Code', 'This is not a valid check-in QR code.', [
-                { text: 'Try Again', onPress: () => setScanned(false) }
-              ]);
-            }
-          }
-        }
-      ]
-    );
+    // Validate QR code using proper validation logic
+    if (data.includes('rewards.company.com/checkin')) {
+      const result = checkIn(currentEmployee.id, data);
+      onScanSuccess(result);
+    } else {
+      Alert.alert('Invalid QR Code', 'This is not a valid check-in QR code.', [
+        { text: 'Try Again', onPress: () => setScanned(false) }
+      ]);
+    }
   };
 
   const toggleCameraFacing = () => {

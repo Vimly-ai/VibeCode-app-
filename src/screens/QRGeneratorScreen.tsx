@@ -157,15 +157,6 @@ export const QRGeneratorScreen: React.FC = () => {
                   Share QR Code Info
                 </Text>
               </Pressable>
-              
-              <Pressable
-                onPress={() => Alert.alert('Debug URL', qrData.qrData)}
-                className="bg-red-600 py-4 rounded-xl"
-              >
-                <Text className="text-white text-center font-semibold text-lg">
-                  Debug: Show Exact URL
-                </Text>
-              </Pressable>
             </View>
           </View>
         </Animated.View>
