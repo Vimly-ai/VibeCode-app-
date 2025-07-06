@@ -92,22 +92,19 @@ interface EmployeeState {
 }
 
 const defaultRewards: Reward[] = [
-  // Weekly (5-10 pts)
+  // Weekly (3-8 pts)
   { id: 'w1', name: '$5 Maverick Card', description: 'Fuel up with a $5 Maverick gift card', pointsCost: 5, category: 'weekly', icon: 'card', available: true },
-  { id: 'w2', name: 'Extra Break', description: 'Take an extra break during your shift', pointsCost: 8, category: 'weekly', icon: 'time', available: true },
   { id: 'w3', name: 'Coffee Voucher', description: 'Free coffee from the company cafe', pointsCost: 3, category: 'weekly', icon: 'cafe', available: true },
   
-  // Monthly (25-50 pts)
+  // Monthly (25 pts)
   { id: 'm1', name: '$25 Gift Card', description: 'Choose from popular retailers', pointsCost: 25, category: 'monthly', icon: 'gift', available: true },
-  { id: 'm2', name: 'Team Lunch', description: 'Lunch with your team on the company', pointsCost: 35, category: 'monthly', icon: 'restaurant', available: true },
-  { id: 'm3', name: 'Parking Spot', description: 'Reserved parking spot for a month', pointsCost: 40, category: 'monthly', icon: 'car', available: true },
   
-  // Quarterly (75-150 pts)
+  // Quarterly (75-120 pts)
   { id: 'q1', name: '$100 Gift Card', description: 'High-value gift card of your choice', pointsCost: 75, category: 'quarterly', icon: 'gift', available: true },
   { id: 'q2', name: 'Half-Day Off', description: 'Take a half day off with pay', pointsCost: 100, category: 'quarterly', icon: 'calendar', available: true },
   { id: 'q3', name: 'Tech Gadget', description: 'Choose from latest tech accessories', pointsCost: 120, category: 'quarterly', icon: 'phone-portrait', available: true },
   
-  // Annual (300+ pts)
+  // Annual (300-400 pts)
   { id: 'a1', name: 'Paid Trip', description: 'Paid trip to a destination of your choice', pointsCost: 300, category: 'annual', icon: 'airplane', available: true },
   { id: 'a2', name: 'Vacation Day', description: 'Additional paid vacation day', pointsCost: 350, category: 'annual', icon: 'calendar', available: true },
   { id: 'a3', name: 'Professional Course', description: 'Enroll in any professional development course', pointsCost: 400, category: 'annual', icon: 'school', available: true },
