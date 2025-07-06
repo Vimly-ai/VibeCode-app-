@@ -261,6 +261,21 @@ const createMockEmployees = (): Employee[] => {
       ],
       rewardsRedeemed: [],
     },
+    {
+      id: 'mock-4',
+      name: 'Jane Smith',
+      email: 'jane.smith@company.com',
+      totalPoints: 0,
+      weeklyPoints: 0,
+      monthlyPoints: 0,
+      quarterlyPoints: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      badges: [],
+      checkIns: [],
+      bonusPoints: [],
+      rewardsRedeemed: [],
+    },
   ];
   
   return mockEmployees;

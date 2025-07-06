@@ -72,7 +72,7 @@ const demoAdmin: User = {
   companyId: 'company-001'
 };
 
-// Demo approved users (password: "demo123" for both)
+// Demo approved users (password: "demo123" for all)
 const demoUsers: User[] = [
   {
     id: 'user-001',
@@ -97,6 +97,19 @@ const demoUsers: User[] = [
     status: 'approved',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     approvedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    approvedBy: 'admin-001',
+    companyId: 'company-001'
+  },
+  {
+    id: 'user-003',
+    email: 'jane.smith@company.com',
+    name: 'Jane Smith',
+    passwordHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', // hashed "demo123"
+    role: 'employee',
+    department: 'Hr',
+    status: 'approved',
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    approvedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     approvedBy: 'admin-001',
     companyId: 'company-001'
   }
@@ -399,6 +412,15 @@ export const useAuthStore = create<AuthState>()(
         approvedUsers: state.approvedUsers,
         savedCredentials: state.savedCredentials,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Ensure only the demo admin has admin role - reset any others to employee
+          state.approvedUsers = state.approvedUsers.map(user => ({
+            ...user,
+            role: user.id === 'admin-001' ? 'admin' : 'employee'
+          }));
+        }
+      },
     }
   )
 );
