@@ -8,7 +8,9 @@ import { format, parseISO } from 'date-fns';
 import { useEmployeeStore } from '../state/employeeStore';
 import { QRCodeScanner } from '../components/QRCodeScanner';
 import { DemoQRCode } from '../components/DemoQRCode';
+import { WebQRScanner } from '../components/WebQRScanner';
 import { cn } from '../utils/cn';
+import { isWeb } from '../utils/platform';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -220,7 +222,7 @@ export const DashboardScreen: React.FC = () => {
                         checkIn.type === 'ontime' ? "bg-green-100" : "bg-gray-100"
                       )}>
                         <Ionicons 
-                          name={checkIn.type === 'early' ? "sunrise" : checkIn.type === 'ontime' ? "checkmark" : "time"} 
+                          name={checkIn.type === 'early' ? "sunny" : checkIn.type === 'ontime' ? "checkmark" : "time"} 
                           size={16} 
                           color={checkIn.type === 'early' ? "#F59E0B" : checkIn.type === 'ontime' ? "#10B981" : "#6B7280"} 
                         />
@@ -283,12 +285,23 @@ export const DashboardScreen: React.FC = () => {
       </ScrollView>
       
       {/* QR Scanner Modal */}
-      <Modal visible={showScanner} animationType="slide" presentationStyle="fullScreen">
-        <QRCodeScanner 
+      {!isWeb && (
+        <Modal visible={showScanner} animationType="slide" presentationStyle="fullScreen">
+          <QRCodeScanner 
+            onClose={() => setShowScanner(false)}
+            onScanSuccess={handleScanSuccess}
+          />
+        </Modal>
+      )}
+      
+      {/* Web QR Scanner Modal */}
+      {isWeb && (
+        <WebQRScanner
+          visible={showScanner}
           onClose={() => setShowScanner(false)}
-          onScanSuccess={handleScanSuccess}
+          onScan={(result: string) => handleScanSuccess({ success: true, message: 'QR Code scanned successfully!', pointsEarned: 10 })}
         />
-      </Modal>
+      )}
       
       {/* Demo QR Code Modal */}
       <DemoQRCode 

@@ -111,7 +111,7 @@ export const RewardApprovalScreen: React.FC = () => {
   if (currentUser?.role !== 'admin') {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
-        <Ionicons name="shield-off" size={64} color="#EF4444" />
+        <Ionicons name="shield" size={64} color="#EF4444" />
         <Text className="text-xl font-bold text-gray-900 mt-4">Access Denied</Text>
         <Text className="text-gray-600 mt-2">Admin access required</Text>
       </SafeAreaView>
