@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, Modal, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,7 +9,7 @@ import { useAuthStore } from '../state/authStore';
 import { useEmployeeStore } from '../state/employeeStore';
 import { cn } from '../utils/cn';
 
-type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
+type StatusFilter = 'all' | 'pending' | 'approved';
 
 export const RewardApprovalScreen: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
@@ -24,7 +24,7 @@ export const RewardApprovalScreen: React.FC = () => {
       employeeId: emp.id,
       employeeName: emp.name,
       employeeEmail: emp.email,
-      employeeDepartment: emp.department || 'Unspecified'
+      employeeDepartment: 'Unspecified'
     }))
   );
   
@@ -87,7 +87,7 @@ export const RewardApprovalScreen: React.FC = () => {
     switch (status) {
       case 'pending': return '#F59E0B';
       case 'approved': return '#10B981';
-      case 'rejected': return '#EF4444';
+      case 'completed': return '#10B981'; // Assuming 'completed' maps to 'approved' for UI
       default: return '#6B7280';
     }
   };
@@ -96,7 +96,7 @@ export const RewardApprovalScreen: React.FC = () => {
     switch (status) {
       case 'pending': return 'time';
       case 'approved': return 'checkmark-circle';
-      case 'rejected': return 'close-circle';
+      case 'completed': return 'checkmark-circle'; // Assuming 'completed' maps to 'approved' for UI
       default: return 'help-circle';
     }
   };
@@ -104,77 +104,75 @@ export const RewardApprovalScreen: React.FC = () => {
   const statusOptions = [
     { key: 'pending', label: 'Pending', count: allRedemptions.filter(r => r.status === 'pending').length },
     { key: 'approved', label: 'Approved', count: allRedemptions.filter(r => r.status === 'approved').length },
-    { key: 'rejected', label: 'Rejected', count: allRedemptions.filter(r => r.status === 'rejected').length },
     { key: 'all', label: 'All', count: allRedemptions.length },
   ];
   
   if (currentUser?.role !== 'admin') {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
-        <Ionicons name="shield" size={64} color="#EF4444" />
-        <Text className="text-xl font-bold text-gray-900 mt-4">Access Denied</Text>
-        <Text className="text-gray-600 mt-2">Admin access required</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centered}>
+          <View style={styles.glassCard}>
+            <Text style={styles.heading}>Access Denied</Text>
+            <Text style={styles.subheading}>Admin access required</Text>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
   
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 pt-4 pb-6">
-        <Text className="text-2xl font-bold text-gray-900">Reward Approvals</Text>
-        <Text className="text-gray-600 mt-1">Review and approve employee reward redemptions</Text>
-      </View>
-      
-      {/* Status Filter */}
-      <View className="px-6 mb-6">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row space-x-3">
-            {statusOptions.map((option) => (
-              <Pressable
-                key={option.key}
-                onPress={() => setStatusFilter(option.key as StatusFilter)}
-                className={cn(
-                  "px-4 py-2 rounded-full flex-row items-center space-x-2",
-                  statusFilter === option.key
-                    ? "bg-blue-600"
-                    : "bg-white border border-gray-200"
-                )}
-              >
-                <Text
-                  className={cn(
-                    "font-medium",
-                    statusFilter === option.key
-                      ? "text-white"
-                      : "text-gray-600"
-                  )}
-                >
-                  {option.label}
-                </Text>
-                <View className={cn(
-                  "px-2 py-1 rounded-full",
-                  statusFilter === option.key ? "bg-white/20" : "bg-gray-100"
-                )}>
-                  <Text className={cn(
-                    "text-xs font-semibold",
-                    statusFilter === option.key ? "text-white" : "text-gray-600"
-                  )}>
-                    {option.count}
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.centered}>
+          <View style={styles.glassCard}>
+            <Text style={styles.heading}>Reward Approval</Text>
+            <Text style={styles.subheading}>Review and approve employee reward redemptions</Text>
           </View>
-        </ScrollView>
-      </View>
-      
-      {/* Quick Stats */}
-      <View className="px-6 mb-6">
-        <View className="flex-row space-x-4">
-          <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-            <View className="flex-row items-center justify-between">
+        </View>
+        
+        {/* Status Filter */}
+        <View style={styles.filterContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.filterButtons}>
+              {statusOptions.map((option) => (
+                <Pressable
+                  key={option.key}
+                  onPress={() => setStatusFilter(option.key as StatusFilter)}
+                  style={[
+                    styles.filterButton,
+                    statusFilter === option.key && styles.activeFilterButton,
+                    statusFilter === option.key && styles.activeFilterButtonBackground
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterButtonText,
+                      statusFilter === option.key && styles.activeFilterButtonText
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  <View style={[
+                    styles.filterCountBadge,
+                    statusFilter === option.key && styles.activeFilterCountBadgeBackground
+                  ]}>
+                    <Text style={styles.filterCountBadgeText}>
+                      {option.count}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+        
+        {/* Quick Stats */}
+        <View style={styles.quickStatsContainer}>
+          <View style={styles.quickStatsCard}>
+            <View style={styles.quickStatsContent}>
               <View>
-                <Text className="text-gray-500 text-sm">Pending</Text>
-                <Text className="text-2xl font-bold text-orange-600">
+                <Text style={styles.quickStatsLabel}>Pending</Text>
+                <Text style={styles.quickStatsValue}>
                   {allRedemptions.filter(r => r.status === 'pending').length}
                 </Text>
               </View>
@@ -182,11 +180,11 @@ export const RewardApprovalScreen: React.FC = () => {
             </View>
           </View>
           
-          <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-            <View className="flex-row items-center justify-between">
+          <View style={styles.quickStatsCard}>
+            <View style={styles.quickStatsContent}>
               <View>
-                <Text className="text-gray-500 text-sm">Total Value</Text>
-                <Text className="text-2xl font-bold text-blue-600">
+                <Text style={styles.quickStatsLabel}>Total Value</Text>
+                <Text style={styles.quickStatsValue}>
                   {allRedemptions.reduce((sum, r) => sum + r.pointsCost, 0)}
                 </Text>
               </View>
@@ -194,23 +192,23 @@ export const RewardApprovalScreen: React.FC = () => {
             </View>
           </View>
         </View>
-      </View>
-      
-      {/* Redemptions List */}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <View className="space-y-4">
-          {sortedRedemptions.map((redemption, index) => (
-            <Animated.View
-              key={redemption.id}
-              entering={FadeInRight.delay(index * 50)}
-              className="bg-white rounded-xl p-5 shadow-sm"
-            >
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1">
-                  <View className="flex-row items-center mb-2">
+        
+        {/* Redemptions List */}
+        <View style={styles.redemptionsListContainer}>
+          <View style={styles.redemptionsList}>
+            {sortedRedemptions.map((redemption, index) => (
+              <Animated.View
+                key={redemption.id}
+                entering={FadeInRight.delay(index * 50)}
+                style={styles.redemptionCard}
+              >
+                <View style={styles.redemptionHeader}>
+                  <View style={styles.redemptionInfo}>
                     <View 
-                      className="w-8 h-8 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: `${getStatusColor(redemption.status)}20` }}
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: `${getStatusColor(redemption.status)}20` }
+                      ]}
                     >
                       <Ionicons 
                         name={getStatusIcon(redemption.status) as any} 
@@ -218,96 +216,96 @@ export const RewardApprovalScreen: React.FC = () => {
                         color={getStatusColor(redemption.status)} 
                       />
                     </View>
-                    <Text className="font-bold text-gray-900 text-lg">{redemption.rewardName}</Text>
+                    <Text style={styles.redemptionTitle}>{redemption.rewardName}</Text>
                   </View>
+                </View>
+                
+                <View style={styles.redemptionDetails}>
+                  <Text style={styles.redemptionEmployeeName}>{redemption.employeeName}</Text>
+                  <Text style={styles.redemptionEmployeeEmail}>{redemption.employeeEmail}</Text>
+                  <Text style={styles.redemptionEmployeeDepartment}>{redemption.employeeDepartment}</Text>
                   
-                  <View className="ml-11">
-                    <Text className="text-gray-700 font-medium">{redemption.employeeName}</Text>
-                    <Text className="text-gray-500 text-sm">{redemption.employeeEmail}</Text>
-                    <Text className="text-gray-500 text-sm capitalize">{redemption.employeeDepartment}</Text>
-                    
-                    <View className="flex-row items-center mt-3 space-x-4">
-                      <View className="flex-row items-center">
-                        <Ionicons name="diamond" size={16} color="#3B82F6" />
-                        <Text className="text-blue-600 font-semibold ml-1">{redemption.pointsCost} points</Text>
-                      </View>
-                      <View className="flex-row items-center">
-                        <Ionicons name="calendar" size={16} color="#6B7280" />
-                        <Text className="text-gray-600 text-sm ml-1">
-                          {format(parseISO(redemption.redeemedAt), 'MMM d, yyyy')}
-                        </Text>
-                      </View>
+                  <View style={styles.redemptionInfoRow}>
+                    <View style={styles.redemptionInfoItem}>
+                      <Ionicons name="diamond" size={16} color="#3B82F6" />
+                      <Text style={styles.redemptionInfoText}>{redemption.pointsCost} points</Text>
+                    </View>
+                    <View style={styles.redemptionInfoItem}>
+                      <Ionicons name="calendar" size={16} color="#6B7280" />
+                      <Text style={styles.redemptionInfoText}>
+                        {format(parseISO(redemption.redeemedAt), 'MMM d, yyyy')}
+                      </Text>
                     </View>
                   </View>
                 </View>
-              </View>
-              
-              {redemption.status === 'pending' && (
-                <View className="flex-row space-x-3 mt-4 pt-4 border-t border-gray-100">
-                  <Pressable
-                    onPress={() => handleRejectReward(redemption.id)}
-                    className="flex-1 bg-red-100 py-3 rounded-full"
-                  >
-                    <Text className="text-red-600 font-semibold text-center">Reject</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => handleApproveReward(redemption.id)}
-                    className="flex-1 bg-green-600 py-3 rounded-full"
-                  >
-                    <Text className="text-white font-semibold text-center">Approve</Text>
-                  </Pressable>
-                </View>
-              )}
-              
-              {redemption.status !== 'pending' && (
-                <View className="mt-4 pt-4 border-t border-gray-100">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-500 text-sm">Status:</Text>
-                    <View className="flex-row items-center">
+                
+                {redemption.status === 'pending' && (
+                  <View style={styles.redemptionActions}>
+                    <Pressable
+                      onPress={() => handleRejectReward(redemption.id)}
+                      style={styles.rejectButton}
+                    >
+                      <Text style={styles.rejectButtonText}>Reject</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleApproveReward(redemption.id)}
+                      style={styles.approveButton}
+                    >
+                      <Text style={styles.approveButtonText}>Approve</Text>
+                    </Pressable>
+                  </View>
+                )}
+                
+                {redemption.status !== 'pending' && (
+                  <View style={styles.redemptionStatusRow}>
+                    <Text style={styles.redemptionStatusLabel}>Status:</Text>
+                    <View style={styles.redemptionStatusBadge}>
                       <Ionicons 
                         name={getStatusIcon(redemption.status) as any} 
                         size={16} 
                         color={getStatusColor(redemption.status)} 
                       />
                       <Text 
-                        className="ml-1 font-medium capitalize"
-                        style={{ color: getStatusColor(redemption.status) }}
+                        style={[
+                          styles.redemptionStatusText,
+                          { color: getStatusColor(redemption.status) }
+                        ]}
                       >
                         {redemption.status}
                       </Text>
                     </View>
                   </View>
-                </View>
-              )}
-              
-              <Pressable
-                onPress={() => setSelectedReward(redemption)}
-                className="mt-3"
-              >
-                <Text className="text-blue-600 text-center font-medium">View Details</Text>
-              </Pressable>
-            </Animated.View>
-          ))}
-        </View>
-        
-        {/* Empty State */}
-        {sortedRedemptions.length === 0 && (
-          <View className="bg-white rounded-xl p-8 items-center">
-            <Ionicons name="gift-outline" size={64} color="#9CA3AF" />
-            <Text className="text-xl font-semibold text-gray-900 mt-4">
-              No {statusFilter === 'all' ? '' : statusFilter} redemptions
-            </Text>
-            <Text className="text-gray-600 text-center mt-2">
-              {statusFilter === 'pending' 
-                ? 'All reward redemptions have been processed'
-                : 'No reward redemptions found for this filter'
-              }
-            </Text>
+                )}
+                
+                <Pressable
+                  onPress={() => setSelectedReward(redemption)}
+                  style={styles.viewDetailsButton}
+                >
+                  <Text style={styles.viewDetailsButtonText}>View Details</Text>
+                </Pressable>
+              </Animated.View>
+            ))}
           </View>
-        )}
-        
-        {/* Bottom padding */}
-        <View className="h-20" />
+          
+          {/* Empty State */}
+          {sortedRedemptions.length === 0 && (
+            <View style={styles.emptyStateContainer}>
+              <Ionicons name="gift-outline" size={64} color="#9CA3AF" />
+              <Text style={styles.emptyStateTitle}>
+                No {statusFilter === 'all' ? '' : statusFilter} redemptions
+              </Text>
+              <Text style={styles.emptyStateSubtitle}>
+                {statusFilter === 'pending' 
+                  ? 'All reward redemptions have been processed'
+                  : 'No reward redemptions found for this filter'
+                }
+              </Text>
+            </View>
+          )}
+          
+          {/* Bottom padding */}
+          <View style={styles.bottomPadding} />
+        </View>
       </ScrollView>
       
       {/* Reward Detail Modal */}
@@ -317,21 +315,23 @@ export const RewardApprovalScreen: React.FC = () => {
         presentationStyle="pageSheet"
       >
         {selectedReward && (
-          <View className="flex-1 bg-white">
-            <View className="p-6 border-b border-gray-200">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-2xl font-bold text-gray-900">Redemption Details</Text>
-                <Pressable onPress={() => setSelectedReward(null)} className="p-2">
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalTitleContainer}>
+                <Text style={styles.modalTitle}>Redemption Details</Text>
+                <Pressable onPress={() => setSelectedReward(null)} style={styles.modalCloseButton}>
                   <Ionicons name="close" size={24} color="#6B7280" />
                 </Pressable>
               </View>
             </View>
             
-            <ScrollView className="flex-1 p-6">
-              <View className="items-center mb-6">
+            <ScrollView style={styles.modalScrollView}>
+              <View style={styles.modalRewardInfo}>
                 <View 
-                  className="w-20 h-20 rounded-full items-center justify-center mb-4"
-                  style={{ backgroundColor: `${getStatusColor(selectedReward.status)}20` }}
+                  style={[
+                    styles.modalStatusBadge,
+                    { backgroundColor: `${getStatusColor(selectedReward.status)}20` }
+                  ]}
                 >
                   <Ionicons 
                     name={getStatusIcon(selectedReward.status) as any} 
@@ -339,55 +339,55 @@ export const RewardApprovalScreen: React.FC = () => {
                     color={getStatusColor(selectedReward.status)} 
                   />
                 </View>
-                <Text className="text-2xl font-bold text-gray-900 text-center">
+                <Text style={styles.modalRewardName}>
                   {selectedReward.rewardName}
                 </Text>
                 <Text 
-                  className="text-lg font-semibold mt-2 capitalize"
-                  style={{ color: getStatusColor(selectedReward.status) }}
+                  style={[
+                    styles.modalRewardStatus,
+                    { color: getStatusColor(selectedReward.status) }
+                  ]}
                 >
                   {selectedReward.status}
                 </Text>
               </View>
               
-              <View className="bg-gray-50 rounded-xl p-4 mb-6">
-                <View className="space-y-3">
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-600">Employee</Text>
-                    <Text className="font-semibold text-gray-900">{selectedReward.employeeName}</Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-600">Department</Text>
-                    <Text className="font-semibold text-gray-900">{selectedReward.employeeDepartment}</Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-600">Points Cost</Text>
-                    <Text className="font-semibold text-blue-600">{selectedReward.pointsCost}</Text>
-                  </View>
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-600">Redeemed Date</Text>
-                    <Text className="font-semibold text-gray-900">
-                      {format(parseISO(selectedReward.redeemedAt), 'MMM d, yyyy h:mm a')}
-                    </Text>
-                  </View>
+              <View style={styles.modalRewardDetails}>
+                <View style={styles.modalRewardDetailRow}>
+                  <Text style={styles.modalRewardDetailLabel}>Employee</Text>
+                  <Text style={styles.modalRewardDetailValue}>{selectedReward.employeeName}</Text>
+                </View>
+                <View style={styles.modalRewardDetailRow}>
+                  <Text style={styles.modalRewardDetailLabel}>Department</Text>
+                  <Text style={styles.modalRewardDetailValue}>{selectedReward.employeeDepartment}</Text>
+                </View>
+                <View style={styles.modalRewardDetailRow}>
+                  <Text style={styles.modalRewardDetailLabel}>Points Cost</Text>
+                  <Text style={styles.modalRewardDetailValue}>{selectedReward.pointsCost}</Text>
+                </View>
+                <View style={styles.modalRewardDetailRow}>
+                  <Text style={styles.modalRewardDetailLabel}>Redeemed Date</Text>
+                  <Text style={styles.modalRewardDetailValue}>
+                    {format(parseISO(selectedReward.redeemedAt), 'MMM d, yyyy h:mm a')}
+                  </Text>
                 </View>
               </View>
               
               {selectedReward.status === 'pending' && (
-                <View className="space-y-3">
+                <View style={styles.modalRewardActions}>
                   <Pressable
                     onPress={() => handleApproveReward(selectedReward.id)}
-                    className="bg-green-600 py-4 rounded-xl"
+                    style={styles.approveRewardButton}
                   >
-                    <Text className="text-white text-center font-semibold text-lg">
+                    <Text style={styles.approveRewardButtonText}>
                       Approve Redemption
                     </Text>
                   </Pressable>
                   <Pressable
                     onPress={() => handleRejectReward(selectedReward.id)}
-                    className="bg-red-600 py-4 rounded-xl"
+                    style={styles.rejectRewardButton}
                   >
-                    <Text className="text-white text-center font-semibold text-lg">
+                    <Text style={styles.rejectRewardButtonText}>
                       Reject & Refund
                     </Text>
                   </Pressable>
@@ -400,3 +400,352 @@ export const RewardApprovalScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#18181b' },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  centered: { width: '100%', maxWidth: 800, alignItems: 'center' },
+  glassCard: { width: '100%', padding: 32, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 2, borderColor: '#b87333', shadowColor: '#b87333', shadowOpacity: 0.25, shadowRadius: 8, marginBottom: 24 },
+  heading: { fontSize: 32, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#b87333', fontFamily: 'UnifrakturCook' },
+  subheading: { fontSize: 16, color: '#6B7280', textAlign: 'center' },
+  filterContainer: {
+    width: '100%',
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  filterButtons: {
+    flexDirection: 'row',
+    backgroundColor: '#262626',
+    borderRadius: 12,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  activeFilterButton: {
+    backgroundColor: '#3B82F6',
+  },
+  activeFilterButtonBackground: {
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6B7280',
+  },
+  activeFilterButtonText: {
+    color: '#FFFFFF',
+  },
+  filterCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#333333',
+  },
+  filterCountBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  activeFilterCountBadgeBackground: {
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+  },
+  quickStatsContainer: {
+    width: '100%',
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  quickStatsCard: {
+    backgroundColor: '#262626',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#333333',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quickStatsContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  quickStatsLabel: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 4,
+  },
+  quickStatsValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  redemptionsListContainer: {
+    width: '100%',
+    paddingHorizontal: 24,
+    flex: 1,
+  },
+  redemptionsList: {
+    width: '100%',
+  },
+  redemptionCard: {
+    backgroundColor: '#262626',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  redemptionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  redemptionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  redemptionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  redemptionDetails: {
+    marginLeft: 44,
+  },
+  redemptionEmployeeName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  redemptionEmployeeEmail: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 4,
+  },
+  redemptionEmployeeDepartment: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 16,
+  },
+  redemptionInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  redemptionInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 24,
+  },
+  redemptionInfoText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginLeft: 8,
+  },
+  redemptionActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#333333',
+  },
+  rejectButton: {
+    flex: 1,
+    backgroundColor: '#EF4444',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  rejectButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  approveButton: {
+    flex: 1,
+    backgroundColor: '#10B981',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  approveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  redemptionStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#333333',
+  },
+  redemptionStatusLabel: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginRight: 8,
+  },
+  redemptionStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  redemptionStatusText: {
+    fontSize: 14,
+    fontWeight: 'medium',
+    marginLeft: 8,
+  },
+  viewDetailsButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#3B82F6',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  viewDetailsButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyStateContainer: {
+    backgroundColor: '#262626',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 16,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  modalContent: {
+    flex: 1,
+    backgroundColor: '#18181b',
+  },
+  modalHeader: {
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  modalTitleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  modalCloseButton: {
+    padding: 8,
+  },
+  modalScrollView: {
+    flex: 1,
+    padding: 24,
+  },
+  modalRewardInfo: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalStatusBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalRewardName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalRewardStatus: {
+    fontSize: 18,
+    fontWeight: 'semibold',
+    marginBottom: 16,
+  },
+  modalRewardDetails: {
+    width: '100%',
+  },
+  modalRewardDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  modalRewardDetailLabel: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  modalRewardDetailValue: {
+    fontSize: 14,
+    fontWeight: 'semibold',
+    color: '#FFFFFF',
+  },
+  modalRewardActions: {
+    width: '100%',
+  },
+  approveRewardButton: {
+    backgroundColor: '#10B981',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  approveRewardButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rejectRewardButton: {
+    backgroundColor: '#EF4444',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  rejectRewardButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  bottomPadding: {
+    height: 20,
+  },
+});

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useEmployeeStore } from '../state/employeeStore';
-import { cn } from '../utils/cn';
 
 type LeaderboardFilter = 'all' | 'weekly' | 'monthly' | 'quarterly';
 
@@ -54,228 +53,359 @@ export const LeaderboardScreen: React.FC = () => {
   ];
   
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 pt-4 pb-6">
-        <Text className="text-2xl font-bold text-gray-900">Leaderboard</Text>
-        <Text className="text-gray-600 mt-1">See how you stack up against your teammates</Text>
-      </View>
-      
-      {/* Filter Tabs */}
-      <View className="px-6 mb-6">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row space-x-3">
-            {filterOptions.map((option) => (
-              <Pressable
-                key={option.key}
-                onPress={() => setFilter(option.key as LeaderboardFilter)}
-                className={cn(
-                  "px-4 py-2 rounded-full",
-                  filter === option.key
-                    ? "bg-blue-600"
-                    : "bg-white border border-gray-200"
-                )}
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#18181b' }}>
+      <ScrollView contentContainerStyle={{ alignItems: 'center', padding: 24, paddingBottom: 80 }} showsVerticalScrollIndicator={false}>
+        {/* Hero Card */}
+        <View style={[styles.glassCard, { alignItems: 'center', padding: 36 }]}>
+          <Text style={{ color: '#b87333', fontSize: 32, fontWeight: 'bold', fontFamily: 'UnifrakturCook', marginBottom: 8 }}>Leaderboard</Text>
+          <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center' }}>See how you stack up against your teammates and climb the ranks!</Text>
+        </View>
+        {/* Filter Tabs */}
+        <View style={{ flexDirection: 'row', marginBottom: 24, width: '100%', maxWidth: 600, justifyContent: 'center' }}>
+          {filterOptions.map((option) => (
+            <Pressable
+              key={option.key}
+              onPress={() => setFilter(option.key as LeaderboardFilter)}
+              style={{
+                backgroundColor: filter === option.key ? 'rgba(255,255,255,0.22)' : 'rgba(40,40,48,0.5)',
+                borderColor: filter === option.key ? '#b87333' : 'transparent',
+                borderWidth: 2,
+                borderRadius: 20,
+                paddingVertical: 10,
+                paddingHorizontal: 24,
+                marginHorizontal: 6,
+                marginBottom: 2,
+              }}
+            >
+              <Text style={{ color: filter === option.key ? '#b87333' : '#fff', fontWeight: 'bold', fontSize: 16 }}>{option.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {/* Podium for Top 3 */}
+        {sortedLeaderboard.length >= 3 && (
+          <View style={{ flexDirection: 'row', width: '100%', maxWidth: 600, justifyContent: 'center', marginBottom: 32 }}>
+            {/* 2nd Place */}
+            <View style={[styles.glassCard, { flex: 1, marginRight: 8, alignItems: 'center', backgroundColor: 'rgba(220,220,220,0.18)', borderColor: '#9CA3AF' }]}>
+              <Ionicons name="medal" size={36} color="#9CA3AF" style={{ marginBottom: 8 }} />
+              <Text style={{ color: '#9CA3AF', fontSize: 22, fontWeight: 'bold' }}>{sortedLeaderboard[1]?.name.split(' ')[0]}</Text>
+              <Text style={{ color: '#fff', fontSize: 18 }}>{getPointsForFilter(sortedLeaderboard[1])} pts</Text>
+            </View>
+            {/* 1st Place */}
+            <View style={[styles.glassCard, { flex: 1, marginHorizontal: 4, alignItems: 'center', backgroundColor: 'rgba(255,215,0,0.18)', borderColor: '#F59E0B' }]}>
+              <Ionicons name="trophy" size={44} color="#F59E0B" style={{ marginBottom: 8 }} />
+              <Text style={{ color: '#F59E0B', fontSize: 26, fontWeight: 'bold' }}>{sortedLeaderboard[0]?.name.split(' ')[0]}</Text>
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{getPointsForFilter(sortedLeaderboard[0])} pts</Text>
+            </View>
+            {/* 3rd Place */}
+            <View style={[styles.glassCard, { flex: 1, marginLeft: 8, alignItems: 'center', backgroundColor: 'rgba(205,127,50,0.18)', borderColor: '#CD7F32' }]}>
+              <Ionicons name="ribbon" size={36} color="#CD7F32" style={{ marginBottom: 8 }} />
+              <Text style={{ color: '#CD7F32', fontSize: 22, fontWeight: 'bold' }}>{sortedLeaderboard[2]?.name.split(' ')[0]}</Text>
+              <Text style={{ color: '#fff', fontSize: 18 }}>{getPointsForFilter(sortedLeaderboard[2])} pts</Text>
+            </View>
+          </View>
+        )}
+        {/* Leaderboard List */}
+        <View style={{ width: '100%', maxWidth: 600 }}>
+          {sortedLeaderboard.map((employee, index) => {
+            const rank = index + 1;
+            const isCurrentUser = employee.id === currentEmployee?.id;
+            return (
+              <View
+                key={employee.id}
+                style={[
+                  styles.glassCard,
+                  {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                    borderColor: rank <= 10 ? '#b87333' : 'rgba(255,255,255,0.12)',
+                    backgroundColor: isCurrentUser ? 'rgba(59,130,246,0.18)' : 'rgba(255,255,255,0.10)',
+                    shadowColor: isCurrentUser ? '#3B82F6' : '#b87333',
+                    shadowOpacity: isCurrentUser ? 0.25 : 0.15,
+                  },
+                ]}
               >
-                <Text
-                  className={cn(
-                    "font-medium",
-                    filter === option.key
-                      ? "text-white"
-                      : "text-gray-600"
-                  )}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-      
-      {/* Top 3 Podium */}
-      {sortedLeaderboard.length >= 3 && (
-        <Animated.View entering={FadeInDown.delay(100)} className="px-6 mb-6">
-          <View className="bg-white rounded-2xl p-6 shadow-sm">
-            <Text className="text-lg font-semibold text-gray-900 mb-4 text-center">
-              Top Performers
-            </Text>
-            <View className="flex-row justify-center items-end space-x-4">
-              {/* 2nd Place */}
-              <View className="items-center">
-                <View className="w-16 h-16 rounded-full bg-gray-100 items-center justify-center mb-2">
-                  <Ionicons name="medal" size={28} color="#9CA3AF" />
+                <View style={{ width: 36, alignItems: 'center' }}>
+                  <Text style={{ color: isCurrentUser ? '#3B82F6' : '#b87333', fontSize: 22, fontWeight: 'bold' }}>{rank}</Text>
                 </View>
-                <Text className="text-sm font-medium text-gray-900 text-center">
-                  {sortedLeaderboard[1]?.name.split(' ')[0]}
-                </Text>
-                <Text className="text-xs text-gray-500">
-                  {getPointsForFilter(sortedLeaderboard[1])} pts
-                </Text>
-              </View>
-              
-              {/* 1st Place */}
-              <View className="items-center -mt-4">
-                <View className="w-20 h-20 rounded-full bg-yellow-100 items-center justify-center mb-2">
-                  <Ionicons name="trophy" size={36} color="#F59E0B" />
+                <Ionicons name={getRankIcon(rank).name as any} size={28} color={getRankIcon(rank).color} style={{ marginHorizontal: 12 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: isCurrentUser ? '#3B82F6' : '#fff', fontSize: 18, fontWeight: isCurrentUser ? 'bold' : 'normal' }}>{employee.name}{isCurrentUser && <Text style={{ color: '#3B82F6' }}> (You)</Text>}</Text>
+                  <Text style={{ color: '#e5e7eb', fontSize: 14 }}>{employee.currentStreak} day streak</Text>
                 </View>
-                <Text className="text-base font-bold text-gray-900 text-center">
-                  {sortedLeaderboard[0]?.name.split(' ')[0]}
-                </Text>
-                <Text className="text-sm text-yellow-600 font-semibold">
-                  {getPointsForFilter(sortedLeaderboard[0])} pts
-                </Text>
+                <Text style={{ color: isCurrentUser ? '#3B82F6' : '#fff', fontSize: 20, fontWeight: 'bold', marginRight: 12 }}>{getPointsForFilter(employee)}</Text>
+                <Text style={{ color: '#e5e7eb', fontSize: 14 }}>pts</Text>
               </View>
-              
-              {/* 3rd Place */}
-              <View className="items-center">
-                <View className="w-16 h-16 rounded-full bg-orange-100 items-center justify-center mb-2">
-                  <Ionicons name="ribbon" size={28} color="#CD7F32" />
-                </View>
-                <Text className="text-sm font-medium text-gray-900 text-center">
-                  {sortedLeaderboard[2]?.name.split(' ')[0]}
-                </Text>
-                <Text className="text-xs text-gray-500">
-                  {getPointsForFilter(sortedLeaderboard[2])} pts
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Animated.View>
-      )}
-      
-      {/* Full Leaderboard */}
-      <View className="flex-1 px-6">
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="space-y-3">
-            {sortedLeaderboard.map((employee, index) => {
-              const rank = index + 1;
-              const isCurrentUser = employee.id === currentEmployee?.id;
-              const rankIcon = getRankIcon(rank);
-              const rankColors = getRankBackground(rank);
-              
-              return (
-                <Animated.View
-                  key={employee.id}
-                  entering={FadeInRight.delay(200 + index * 50)}
-                >
-                  <LinearGradient
-                    colors={isCurrentUser ? ['#3B82F6', '#1D4ED8'] : rankColors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className={cn(
-                      "rounded-xl p-4 shadow-sm",
-                      isCurrentUser && "border-2 border-blue-400"
-                    )}
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-row items-center flex-1">
-                        {/* Rank */}
-                        <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center mr-3">
-                          <Text className={cn(
-                            "font-bold text-sm",
-                            isCurrentUser ? "text-white" : "text-gray-700"
-                          )}>
-                            {rank}
-                          </Text>
-                        </View>
-                        
-                        {/* Rank Icon */}
-                        <View className="mr-3">
-                          <Ionicons 
-                            name={rankIcon.name as any} 
-                            size={24} 
-                            color={isCurrentUser ? 'white' : rankIcon.color} 
-                          />
-                        </View>
-                        
-                        {/* Employee Info */}
-                        <View className="flex-1">
-                          <Text className={cn(
-                            "font-semibold text-base",
-                            isCurrentUser ? "text-white" : "text-gray-900"
-                          )}>
-                            {employee.name}
-                            {isCurrentUser && (
-                              <Text className="text-sm font-normal"> (You)</Text>
-                            )}
-                          </Text>
-                          <View className="flex-row items-center mt-1">
-                            <Ionicons 
-                              name="flame" 
-                              size={14} 
-                              color={isCurrentUser ? 'white' : '#F59E0B'} 
-                            />
-                            <Text className={cn(
-                              "text-sm ml-1",
-                              isCurrentUser ? "text-white/80" : "text-gray-600"
-                            )}>
-                              {employee.currentStreak} day streak
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                      
-                      {/* Points */}
-                      <View className="items-end">
-                        <Text className={cn(
-                          "text-xl font-bold",
-                          isCurrentUser ? "text-white" : "text-gray-900"
-                        )}>
-                          {getPointsForFilter(employee)}
-                        </Text>
-                        <Text className={cn(
-                          "text-sm",
-                          isCurrentUser ? "text-white/80" : "text-gray-500"
-                        )}>
-                          points
-                        </Text>
-                      </View>
-                    </View>
-                    
-                    {/* Badges Preview */}
-                    {employee.badges.length > 0 && (
-                      <View className="flex-row items-center mt-3 pt-3 border-t border-white/20">
-                        <View className="flex-row space-x-1">
-                          {employee.badges.slice(-3).map((badge, badgeIndex) => (
-                            <View
-                              key={badge.id}
-                              className="w-6 h-6 rounded-full items-center justify-center"
-                              style={{ backgroundColor: badge.color }}
-                            >
-                              <Ionicons name={badge.icon as any} size={12} color="white" />
-                            </View>
-                          ))}
-                        </View>
-                        <Text className={cn(
-                          "text-sm ml-2",
-                          isCurrentUser ? "text-white/80" : "text-gray-600"
-                        )}>
-                          {employee.badges.length} badge{employee.badges.length !== 1 ? 's' : ''}
-                        </Text>
-                      </View>
-                    )}
-                  </LinearGradient>
-                </Animated.View>
-              );
-            })}
-          </View>
-          
-          {/* Empty State */}
-          {sortedLeaderboard.length === 0 && (
-            <View className="bg-white rounded-xl p-8 items-center">
-              <Ionicons name="trophy-outline" size={64} color="#9CA3AF" />
-              <Text className="text-xl font-semibold text-gray-900 mt-4">
-                No rankings yet
-              </Text>
-              <Text className="text-gray-600 text-center mt-2">
-                Start checking in to see your name on the leaderboard!
-              </Text>
-            </View>
-          )}
-          
-          {/* Bottom padding */}
-          <View className="h-20" />
-        </ScrollView>
-      </View>
+            );
+          })}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#18181b' },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  centered: { width: '100%', maxWidth: 800, alignItems: 'center' },
+  glassCard: {
+    width: '100%',
+    maxWidth: 600,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 2,
+    borderColor: '#b87333',
+    shadowColor: '#b87333',
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    padding: 32,
+    marginBottom: 24,
+  },
+  heading: { fontSize: 32, fontWeight: 'bold', marginBottom: 12, textAlign: 'center', color: '#b87333', fontFamily: 'UnifrakturCook' },
+  subheading: { color: '#b87333', fontSize: 16, marginBottom: 16, textAlign: 'center' },
+  filterTabsWrapper: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  filterTabs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
+    marginRight: 8,
+  },
+  filterTabActive: {
+    backgroundColor: '#3B82F6',
+  },
+  filterTabInactive: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  filterTabText: {
+    fontWeight: '500',
+  },
+  filterTabTextActive: {
+    color: '#fff',
+  },
+  filterTabTextInactive: {
+    color: '#666',
+  },
+  podiumContainer: {
+    width: '100%',
+    maxWidth: 800,
+    padding: 32,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 2,
+    borderColor: '#7c7c7c',
+    shadowColor: '#7c7c7c',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    marginBottom: 16,
+  },
+  podiumTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
+    color: '#7c7c7c',
+    fontFamily: 'UnifrakturCook',
+  },
+  podiumRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+  },
+  podiumItem: {
+    alignItems: 'center',
+  },
+  podiumIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  podiumName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  podiumPoints: {
+    fontSize: 14,
+    color: '#666',
+  },
+  leaderboardList: {
+    width: '100%',
+  },
+  leaderboardItem: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  currentUserItem: {
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+  },
+  leaderboardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leaderboardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  rankBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  rankText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rankTextWhite: {
+    color: 'white',
+  },
+  rankTextGray: {
+    color: '#6B7280',
+  },
+  rankIconContainer: {
+    marginRight: 12,
+  },
+  employeeInfo: {
+    flex: 1,
+  },
+  employeeName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  employeeNameWhite: {
+    color: 'white',
+  },
+  employeeNameGray: {
+    color: '#6B7280',
+  },
+  employeeNameYou: {
+    fontSize: 14,
+    fontWeight: 'normal',
+    color: '#6B7280',
+  },
+  employeeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  employeeBadgeText: {
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  employeeBadgeTextWhite: {
+    color: 'white',
+  },
+  employeeBadgeTextGray: {
+    color: '#6B7280',
+  },
+  pointsContainer: {
+    alignItems: 'flex-end',
+  },
+  pointsText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  pointsTextWhite: {
+    color: 'white',
+  },
+  pointsTextGray: {
+    color: '#6B7280',
+  },
+  pointsUnit: {
+    fontSize: 14,
+    color: '#666',
+  },
+  pointsUnitWhite: {
+    color: 'white',
+  },
+  pointsUnitGray: {
+    color: '#6B7280',
+  },
+  badgesPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.2)',
+  },
+  badgesList: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  badgeItem: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgesCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  badgesCountWhite: {
+    color: 'white',
+  },
+  badgesCountGray: {
+    color: '#6B7280',
+  },
+  emptyStateContainer: {
+    width: '100%',
+    maxWidth: 800,
+    padding: 32,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 2,
+    borderColor: '#7c7c7c',
+    shadowColor: '#7c7c7c',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#7c7c7c',
+    marginTop: 16,
+  },
+  emptyStateText: {
+    color: '#666',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  bottomPadding: {
+    height: 20,
+  },
+});

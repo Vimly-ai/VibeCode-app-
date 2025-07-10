@@ -17,6 +17,7 @@ import { useAuthStore } from '../state/authStore';
 const Tab = createBottomTabNavigator();
 
 export const AppNavigator: React.FC = () => {
+  console.log('AppNavigator rendered (top of file)');
   const { currentEmployee, employees, initializeEmployee, setCurrentEmployee } = useEmployeeStore();
   const { currentUser, isAuthenticated, autoSignIn, getPendingUsers } = useAuthStore();
   
@@ -53,6 +54,7 @@ export const AppNavigator: React.FC = () => {
     return (
       <NavigationContainer>
         <Tab.Navigator
+          id={undefined}
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
               let iconName: any;
@@ -125,6 +127,7 @@ export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator
+        id={undefined}
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName: any;

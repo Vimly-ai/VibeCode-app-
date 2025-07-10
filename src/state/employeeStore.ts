@@ -37,6 +37,7 @@ export interface CheckIn {
   timestamp: string;
   pointsEarned: number;
   type: 'ontime' | 'early' | 'late';
+  bonusReason?: string;
 }
 
 export interface BonusPoint {
@@ -63,7 +64,7 @@ export interface RewardRedemption {
   rewardName: string;
   pointsCost: number;
   redeemedAt: string;
-  status: 'pending' | 'approved' | 'completed';
+  status: 'pending' | 'approved' | 'completed' | 'rejected';
 }
 
 interface EmployeeState {
@@ -89,6 +90,7 @@ interface EmployeeState {
     recentCheckIns: CheckIn[];
     recentBonusPoints: BonusPoint[];
   };
+  clearStore: () => void;
 }
 
 const defaultRewards: Reward[] = [
@@ -681,6 +683,14 @@ export const useEmployeeStore = create<EmployeeState>()(
           recentCheckIns,
           recentBonusPoints,
         };
+      },
+
+      clearStore: () => {
+        set({
+          currentEmployee: null,
+          employees: createMockEmployees(),
+          rewards: defaultRewards,
+        });
       },
     }),
     {

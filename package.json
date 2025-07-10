@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@expo/metro-runtime": "~5.0.4",
     "@expo/react-native-action-sheet": "^4.1.1",
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -33,7 +34,7 @@
     "@react-navigation/native-stack": "^7.3.2",
     "@react-navigation/stack": "^7.1.1",
     "@shopify/flash-list": "1.7.6",
-    "@shopify/react-native-skia": "v2.0.0-next.4",
+    "@shopify/react-native-skia": "^1.2.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "expo": "^53.0.9",
@@ -115,11 +116,12 @@
     "uuid": "^11.1.0",
     "victory-native": "^41.16.2",
     "zeego": "^3.0.6",
-    "zustand": "^5.0.4"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
+    "@types/react-native": "^0.72.8",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
     "babel-plugin-module-resolver": "^5.0.2",

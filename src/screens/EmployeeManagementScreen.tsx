@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, Modal, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -52,7 +52,7 @@ export const EmployeeManagementScreen: React.FC = () => {
   
   if (currentUser?.role !== 'admin') {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
+      <SafeAreaView style={styles.safeArea}>
         <Ionicons name="shield" size={64} color="#EF4444" />
         <Text className="text-xl font-bold text-gray-900 mt-4">Access Denied</Text>
         <Text className="text-gray-600 mt-2">Admin access required</Text>
@@ -255,362 +255,353 @@ export const EmployeeManagementScreen: React.FC = () => {
   ];
   
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="px-6 pt-4 pb-6">
-        <Text className="text-2xl font-bold text-gray-900">Employee Management</Text>
-        <Text className="text-gray-600 mt-1">Manage users and track performance</Text>
-      </View>
-      
-      {/* Tabs */}
-      <View className="px-6 mb-6">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row space-x-3">
-            {tabs.map((tab) => (
-              <Pressable
-                key={tab.key}
-                onPress={() => setActiveTab(tab.key as TabType)}
-                className={cn(
-                  "px-4 py-3 rounded-full flex-row items-center space-x-2",
-                  activeTab === tab.key
-                    ? "bg-blue-600"
-                    : "bg-white border border-gray-200"
-                )}
-              >
-                <Ionicons 
-                  name={tab.icon as any} 
-                  size={18} 
-                  color={activeTab === tab.key ? 'white' : '#6B7280'} 
-                />
-                <Text
-                  className={cn(
-                    "font-medium",
-                    activeTab === tab.key
-                      ? "text-white"
-                      : "text-gray-600"
-                  )}
-                >
-                  {tab.label}
-                </Text>
-                {tab.count > 0 && (
-                  <View className={cn(
-                    "px-2 py-1 rounded-full",
-                    activeTab === tab.key ? "bg-white/20" : "bg-gray-100"
-                  )}>
-                    <Text className={cn(
-                      "text-xs font-semibold",
-                      activeTab === tab.key ? "text-white" : "text-gray-600"
-                    )}>
-                      {tab.count}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-      
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {/* Approved Employees */}
-        {activeTab === 'approved' && (
-          <View className="space-y-4">
-            {employeesWithData.map((employee, index) => (
-              <Animated.View
-                key={employee.id}
-                entering={FadeInRight.delay(index * 50)}
-                className="bg-white rounded-xl p-5 shadow-sm"
-              >
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center flex-1">
-                    <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mr-4">
-                      <Text className="text-blue-600 font-semibold">
-                        {employee.name.split(' ').map(n => n[0]).join('')}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.centered}>
+          <View style={styles.glassCard}>
+            <Text style={styles.heading}>Employee Management</Text>
+            <View style={styles.tabContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.tabButtons}>
+                  {tabs.map((tab) => (
+                    <Pressable
+                      key={tab.key}
+                      onPress={() => setActiveTab(tab.key as TabType)}
+                      style={[
+                        styles.tabButton,
+                        activeTab === tab.key && styles.activeTabButton,
+                      ]}
+                    >
+                      <Ionicons 
+                        name={tab.icon as any} 
+                        size={18} 
+                        color={activeTab === tab.key ? 'white' : '#6B7280'} 
+                      />
+                      <Text
+                        style={[
+                          styles.tabButtonText,
+                          activeTab === tab.key && styles.activeTabButtonText,
+                        ]}
+                      >
+                        {tab.label}
                       </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text className="font-semibold text-gray-900">{employee.name}</Text>
-                      <Text className="text-sm text-gray-600">{employee.email}</Text>
-                      <Text className="text-sm text-gray-500 capitalize">{employee.department}</Text>
-                    </View>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-lg font-bold text-gray-900">{employee.totalPoints}</Text>
-                    <Text className="text-sm text-gray-600">points</Text>
-                  </View>
+                      {tab.count > 0 && (
+                        <View style={[
+                          styles.tabCountBadge,
+                          activeTab === tab.key && styles.activeTabCountBadge,
+                        ]}>
+                          <Text style={[
+                            styles.tabCountText,
+                            activeTab === tab.key && styles.activeTabCountText,
+                          ]}>
+                            {tab.count}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  ))}
                 </View>
-                
-                <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                  <View className="flex-row items-center space-x-4">
-                    <View className="flex-row items-center">
-                      <Ionicons name="flame" size={16} color="#F59E0B" />
-                      <Text className="text-sm text-gray-600 ml-1">{employee.currentStreak} streak</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                      <Text className="text-sm text-gray-600 ml-1">{(employee.checkIns || []).length} check-ins</Text>
-                    </View>
-                  </View>
-                  <Pressable
-                    onPress={() => setSelectedEmployee(employee)}
-                    className="bg-blue-600 px-4 py-2 rounded-full"
-                  >
-                    <Text className="text-white text-sm font-medium">View Details</Text>
-                  </Pressable>
-                </View>
-              </Animated.View>
-            ))}
-          </View>
-        )}
-        
-        {/* Pending Users */}
-        {activeTab === 'pending' && (
-          <View className="space-y-4">
-            {pendingUsers.map((user, index) => (
-              <Animated.View
-                key={user.id}
-                entering={FadeInRight.delay(index * 50)}
-                className="bg-white rounded-xl p-5 shadow-sm"
-              >
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center flex-1">
-                    <View className="w-12 h-12 bg-yellow-100 rounded-full items-center justify-center mr-4">
-                      <Ionicons name="time" size={24} color="#F59E0B" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="font-semibold text-gray-900">{user.name}</Text>
-                      <Text className="text-sm text-gray-600">{user.email}</Text>
-                      <Text className="text-sm text-gray-500 capitalize">{user.department}</Text>
-                      <Text className="text-xs text-gray-400 mt-1">
-                        Applied {format(parseISO(user.createdAt), 'MMM d, yyyy')}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                
-                <View className="flex-row space-x-3 mt-4">
-                  <Pressable
-                    onPress={() => handleRejectUser(user.id)}
-                    className="flex-1 bg-red-100 py-3 rounded-full"
-                  >
-                    <Text className="text-red-600 font-semibold text-center">Reject</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => handleApproveUser(user.id)}
-                    className="flex-1 bg-green-600 py-3 rounded-full"
-                  >
-                    <Text className="text-white font-semibold text-center">Approve</Text>
-                  </Pressable>
-                </View>
-              </Animated.View>
-            ))}
+              </ScrollView>
+            </View>
             
-            {pendingUsers.length === 0 && (
-              <View className="bg-white rounded-xl p-8 items-center">
-                <Ionicons name="checkmark-circle" size={64} color="#10B981" />
-                <Text className="text-xl font-semibold text-gray-900 mt-4">All Caught Up!</Text>
-                <Text className="text-gray-600 text-center mt-2">No pending user approvals</Text>
+            {/* Approved Employees */}
+            {activeTab === 'approved' && (
+              <View style={styles.sectionContainer}>
+                {employeesWithData.map((employee, index) => (
+                  <Animated.View
+                    key={employee.id}
+                    entering={FadeInRight.delay(index * 50)}
+                    style={styles.employeeCard}
+                  >
+                    <View style={styles.employeeHeader}>
+                      <View style={styles.employeeAvatar}>
+                        <Text style={styles.employeeAvatarText}>
+                          {employee.name.split(' ').map(n => n[0]).join('')}
+                        </Text>
+                      </View>
+                      <View style={styles.employeeInfo}>
+                        <Text style={styles.employeeName}>{employee.name}</Text>
+                        <Text style={styles.employeeEmail}>{employee.email}</Text>
+                        <Text style={styles.employeeDepartment}>{employee.department}</Text>
+                      </View>
+                      <View style={styles.employeePoints}>
+                        <Text style={styles.employeeTotalPoints}>{employee.totalPoints}</Text>
+                        <Text style={styles.employeePointsLabel}>points</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.employeeDetails}>
+                      <View style={styles.employeeStats}>
+                        <View style={styles.employeeStatItem}>
+                          <Ionicons name="flame" size={16} color="#F59E0B" />
+                          <Text style={styles.employeeStatLabel}>{employee.currentStreak} streak</Text>
+                        </View>
+                        <View style={styles.employeeStatItem}>
+                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                          <Text style={styles.employeeStatLabel}>{(employee.checkIns || []).length} check-ins</Text>
+                        </View>
+                      </View>
+                      <Pressable
+                        onPress={() => setSelectedEmployee(employee)}
+                        style={styles.viewDetailsButton}
+                      >
+                        <Text style={styles.viewDetailsButtonText}>View Details</Text>
+                      </Pressable>
+                    </View>
+                  </Animated.View>
+                ))}
               </View>
             )}
-          </View>
-        )}
-        
-        {/* Analytics */}
-        {activeTab === 'analytics' && (
-          <View className="space-y-8">
-            {/* Attendance Trends */}
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">📊 Attendance Trends</Text>
-              <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Today's Check-in Rate</Text>
-                  <Text className="font-semibold text-green-600">
-                    {Math.round((employeesWithData.filter(emp => 
-                      (emp.checkIns || []).some(ci => 
-                        format(parseISO(ci.timestamp), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-                      )
-                    ).length / Math.max(employeesWithData.length, 1)) * 100)}%
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">This Week's Average</Text>
-                  <Text className="font-semibold text-blue-600">
-                    {Math.round((employeesWithData.reduce((sum, emp) => sum + emp.weeklyPoints, 0) / Math.max(employeesWithData.length, 1)) * 10) / 10} pts/person
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Early Birds This Week</Text>
-                  <Text className="font-semibold text-orange-600">
-                    {employeesWithData.filter(emp => 
-                      (emp.checkIns || []).filter(ci => ci.type === 'early').length >= 3
-                    ).length} employees
-                  </Text>
-                </View>
+            
+            {/* Pending Users */}
+            {activeTab === 'pending' && (
+              <View style={styles.sectionContainer}>
+                {pendingUsers.map((user, index) => (
+                  <Animated.View
+                    key={user.id}
+                    entering={FadeInRight.delay(index * 50)}
+                    style={styles.employeeCard}
+                  >
+                    <View style={styles.employeeHeader}>
+                      <View style={styles.employeeAvatar}>
+                        <Ionicons name="time" size={24} color="#F59E0B" />
+                      </View>
+                      <View style={styles.employeeInfo}>
+                        <Text style={styles.employeeName}>{user.name}</Text>
+                        <Text style={styles.employeeEmail}>{user.email}</Text>
+                        <Text style={styles.employeeDepartment}>{user.department}</Text>
+                        <Text style={styles.employeeAppliedDate}>
+                          Applied {format(parseISO(user.createdAt), 'MMM d, yyyy')}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.employeeActions}>
+                      <Pressable
+                        onPress={() => handleRejectUser(user.id)}
+                        style={styles.rejectButton}
+                      >
+                        <Text style={styles.rejectButtonText}>Reject</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleApproveUser(user.id)}
+                        style={styles.approveButton}
+                      >
+                        <Text style={styles.approveButtonText}>Approve</Text>
+                      </Pressable>
+                    </View>
+                  </Animated.View>
+                ))}
+                
+                {pendingUsers.length === 0 && (
+                  <View style={styles.noPendingUsersContainer}>
+                    <Ionicons name="checkmark-circle" size={64} color="#10B981" />
+                    <Text style={styles.noPendingUsersTitle}>All Caught Up!</Text>
+                    <Text style={styles.noPendingUsersSubtitle}>No pending user approvals</Text>
+                  </View>
+                )}
               </View>
-            </View>
-
-            {/* Problem Areas */}
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">⚠️ Areas Needing Attention</Text>
-              <View className="space-y-4">
-                <View className="flex-row items-start justify-between">
-                  <Text className="text-gray-700 flex-1 mr-3">Employees with Low Consistency (&lt;70%)</Text>
-                  <Text className="font-semibold text-red-600 text-right">
-                    {employeesWithData.filter(emp => {
-                      const checkIns = emp.checkIns || [];
-                      const totalCheckins = checkIns.length;
-                      const goodCheckins = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
-                      return totalCheckins > 0 && (goodCheckins / totalCheckins * 100) < 70;
-                    }).length} employees
-                  </Text>
-                </View>
-                <View className="flex-row items-start justify-between">
-                  <Text className="text-gray-700 flex-1 mr-3">Lost Streaks This Week</Text>
-                  <Text className="font-semibold text-yellow-600 text-right">
-                    {employeesWithData.filter(emp => emp.longestStreak > emp.currentStreak + 3).length} employees
-                  </Text>
-                </View>
-                <View className="flex-row items-start justify-between">
-                  <Text className="text-gray-700 flex-1 mr-3">No Check-ins Last 3 Days</Text>
-                  <Text className="font-semibold text-red-600 text-right">
-                    {employeesWithData.filter(emp => {
-                      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-                      return !(emp.checkIns || []).some(ci => parseISO(ci.timestamp) > threeDaysAgo);
-                    }).length} employees
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Performance Insights */}
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">🏆 Team Performance</Text>
-              <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Top Performer (Most Points)</Text>
-                  <Text className="font-semibold text-green-600">
-                    {employeesWithData.length > 0 ? 
-                      employeesWithData.reduce((top, emp) => emp.totalPoints > top.totalPoints ? emp : top).name.split(' ')[0]
-                      : 'None'
-                    }
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Longest Current Streak</Text>
-                  <Text className="font-semibold text-orange-600">
-                    {Math.max(...employeesWithData.map(emp => emp.currentStreak), 0)} days
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Team Consistency Average</Text>
-                  <Text className={cn(
-                    "font-semibold",
-                    employeesWithData.length > 0 && 
-                    (employeesWithData.reduce((sum, emp) => {
-                      const checkIns = emp.checkIns || [];
-                      const total = checkIns.length;
-                      const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
-                      return sum + (total > 0 ? good / total * 100 : 0);
-                    }, 0) / employeesWithData.length) >= 80 ? "text-green-600" : 
-                    (employeesWithData.reduce((sum, emp) => {
-                      const checkIns = emp.checkIns || [];
-                      const total = checkIns.length;
-                      const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
-                      return sum + (total > 0 ? good / total * 100 : 0);
-                    }, 0) / employeesWithData.length) >= 60 ? "text-yellow-600" : "text-red-600"
-                  )}>
-                    {employeesWithData.length > 0 ? 
-                      Math.round(employeesWithData.reduce((sum, emp) => {
-                        const checkIns = emp.checkIns || [];
-                        const total = checkIns.length;
-                        const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
-                        return sum + (total > 0 ? good / total * 100 : 0);
-                      }, 0) / employeesWithData.length) + '%'
-                      : '0%'
-                    }
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Weekly Patterns */}
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">📅 Weekly Patterns</Text>
-              <View className="space-y-3">
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
-                  const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].indexOf(day) + 1;
-                  const dayCheckIns = employeesWithData.flatMap(emp => 
-                    (emp.checkIns || []).filter(ci => {
-                      const checkInDay = parseISO(ci.timestamp).getDay();
-                      return checkInDay === dayIndex;
-                    })
-                  );
-                  const lateCount = dayCheckIns.filter(ci => ci.type === 'late').length;
-                  const totalCount = dayCheckIns.length;
-                  const latePercentage = totalCount > 0 ? Math.round((lateCount / totalCount) * 100) : 0;
-                  
-                  return (
-                    <View key={day} className="flex-row items-center justify-between">
-                      <Text className="text-gray-700">{day} Late Rate</Text>
-                      <Text className={cn(
-                        "font-semibold",
-                        latePercentage <= 10 ? "text-green-600" :
-                        latePercentage <= 25 ? "text-yellow-600" : "text-red-600"
-                      )}>
-                        {latePercentage}% ({lateCount}/{totalCount})
+            )}
+            
+            {/* Analytics */}
+            {activeTab === 'analytics' && (
+              <View style={styles.sectionContainer}>
+                {/* Attendance Trends */}
+                <View style={styles.analyticsCard}>
+                  <Text style={styles.analyticsHeading}>📊 Attendance Trends</Text>
+                  <View style={styles.analyticsStats}>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Today's Check-in Rate</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {Math.round((employeesWithData.filter(emp => 
+                          (emp.checkIns || []).some(ci => 
+                            format(parseISO(ci.timestamp), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                          )
+                        ).length / Math.max(employeesWithData.length, 1)) * 100)}%
                       </Text>
                     </View>
-                  );
-                })}
-              </View>
-            </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>This Week's Average</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {Math.round((employeesWithData.reduce((sum, emp) => sum + emp.weeklyPoints, 0) / Math.max(employeesWithData.length, 1)) * 10) / 10} pts/person
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Early Birds This Week</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.filter(emp => 
+                          (emp.checkIns || []).filter(ci => ci.type === 'early').length >= 3
+                        ).length} employees
+                      </Text>
+                    </View>
+                  </View>
+                </View>
 
-            {/* Reward System Health */}
-            <View className="bg-white rounded-xl p-6 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">💎 Reward System Health</Text>
-              <View className="space-y-4">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Total Points Distributed</Text>
-                  <Text className="font-semibold text-blue-600">
-                    {employeesWithData.reduce((sum, emp) => sum + emp.totalPoints, 0).toLocaleString()}
-                  </Text>
+                {/* Problem Areas */}
+                <View style={styles.analyticsCard}>
+                  <Text style={styles.analyticsHeading}>⚠️ Areas Needing Attention</Text>
+                  <View style={styles.analyticsStats}>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Employees with Low Consistency (&lt;70%)</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.filter(emp => {
+                          const checkIns = emp.checkIns || [];
+                          const totalCheckins = checkIns.length;
+                          const goodCheckins = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                          return totalCheckins > 0 && (goodCheckins / totalCheckins * 100) < 70;
+                        }).length} employees
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Lost Streaks This Week</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.filter(emp => emp.longestStreak > emp.currentStreak + 3).length} employees
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>No Check-ins Last 3 Days</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.filter(emp => {
+                          const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+                          return !(emp.checkIns || []).some(ci => parseISO(ci.timestamp) > threeDaysAgo);
+                        }).length} employees
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Pending Reward Approvals</Text>
-                  <Text className="font-semibold text-orange-600">
-                    {employeesWithData.reduce((sum, emp) => 
-                      sum + (emp.rewardsRedeemed || []).filter(r => r.status === 'pending').length, 0
-                    )}
-                  </Text>
+
+                {/* Performance Insights */}
+                <View style={styles.analyticsCard}>
+                  <Text style={styles.analyticsHeading}>🏆 Team Performance</Text>
+                  <View style={styles.analyticsStats}>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Top Performer (Most Points)</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.length > 0 ? 
+                          employeesWithData.reduce((top, emp) => emp.totalPoints > top.totalPoints ? emp : top).name.split(' ')[0]
+                          : 'None'
+                        }
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Longest Current Streak</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {Math.max(...employeesWithData.map(emp => emp.currentStreak), 0)} days
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Team Consistency Average</Text>
+                      <Text style={[
+                        styles.analyticsStatValue,
+                        employeesWithData.length > 0 && 
+                        (employeesWithData.reduce((sum, emp) => {
+                          const checkIns = emp.checkIns || [];
+                          const total = checkIns.length;
+                          const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                          return sum + (total > 0 ? good / total * 100 : 0);
+                        }, 0) / employeesWithData.length) >= 80 ? styles.highPerformance : 
+                        (employeesWithData.reduce((sum, emp) => {
+                          const checkIns = emp.checkIns || [];
+                          const total = checkIns.length;
+                          const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                          return sum + (total > 0 ? good / total * 100 : 0);
+                        }, 0) / employeesWithData.length) >= 60 ? styles.mediumPerformance : styles.lowPerformance
+                      ]}>
+                        {employeesWithData.length > 0 ? 
+                          Math.round(employeesWithData.reduce((sum, emp) => {
+                            const checkIns = emp.checkIns || [];
+                            const total = checkIns.length;
+                            const good = checkIns.filter(ci => ci.type === 'early' || ci.type === 'ontime').length;
+                            return sum + (total > 0 ? good / total * 100 : 0);
+                          }, 0) / employeesWithData.length) + '%'
+                          : '0%'
+                        }
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Points Spent on Rewards</Text>
-                  <Text className="font-semibold text-green-600">
-                    {employeesWithData.reduce((sum, emp) => 
-                      sum + (emp.rewardsRedeemed || []).reduce((rewardSum, r) => rewardSum + r.pointsCost, 0), 0
-                    ).toLocaleString()}
-                  </Text>
+
+                {/* Weekly Patterns */}
+                <View style={styles.analyticsCard}>
+                  <Text style={styles.analyticsHeading}>📅 Weekly Patterns</Text>
+                  <View style={styles.weeklyPatternsContainer}>
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+                      const dayIndex = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].indexOf(day) + 1;
+                      const dayCheckIns = employeesWithData.flatMap(emp => 
+                        (emp.checkIns || []).filter(ci => {
+                          const checkInDay = parseISO(ci.timestamp).getDay();
+                          return checkInDay === dayIndex;
+                        })
+                      );
+                      const lateCount = dayCheckIns.filter(ci => ci.type === 'late').length;
+                      const totalCount = dayCheckIns.length;
+                      const latePercentage = totalCount > 0 ? Math.round((lateCount / totalCount) * 100) : 0;
+                      
+                      return (
+                        <View key={day} style={styles.weeklyPatternItem}>
+                          <Text style={styles.weeklyPatternLabel}>{day} Late Rate</Text>
+                          <Text style={[
+                            styles.weeklyPatternValue,
+                            latePercentage <= 10 ? styles.lowPerformance :
+                            latePercentage <= 25 ? styles.mediumPerformance : styles.highPerformance
+                          ]}>
+                            {latePercentage}% ({lateCount}/{totalCount})
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
                 </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Bonus Points Awarded</Text>
-                  <Text className="font-semibold text-purple-600">
-                    {employeesWithData.reduce((sum, emp) => 
-                      sum + (emp.bonusPoints || []).reduce((bonusSum, b) => bonusSum + b.pointsAwarded, 0), 0
-                    ).toLocaleString()}
-                  </Text>
-                </View>
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-gray-700">Employees with Bonuses</Text>
-                  <Text className="font-semibold text-purple-600">
-                    {employeesWithData.filter(emp => (emp.bonusPoints || []).length > 0).length} employees
-                  </Text>
+
+                {/* Reward System Health */}
+                <View style={styles.analyticsCard}>
+                  <Text style={styles.analyticsHeading}>💎 Reward System Health</Text>
+                  <View style={styles.analyticsStats}>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Total Points Distributed</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.reduce((sum, emp) => sum + emp.totalPoints, 0).toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Pending Reward Approvals</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.reduce((sum, emp) => 
+                          sum + (emp.rewardsRedeemed || []).filter(r => r.status === 'pending').length, 0
+                        )}
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Points Spent on Rewards</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.reduce((sum, emp) => 
+                          sum + (emp.rewardsRedeemed || []).reduce((rewardSum, r) => rewardSum + r.pointsCost, 0), 0
+                        ).toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Bonus Points Awarded</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.reduce((sum, emp) => 
+                          sum + (emp.bonusPoints || []).reduce((bonusSum, b) => bonusSum + b.pointsAwarded, 0), 0
+                        ).toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.analyticsStatItem}>
+                      <Text style={styles.analyticsStatLabel}>Employees with Bonuses</Text>
+                      <Text style={styles.analyticsStatValue}>
+                        {employeesWithData.filter(emp => (emp.bonusPoints || []).length > 0).length} employees
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </View>
+            )}
+            
+            {/* Bottom padding */}
+            <View style={styles.bottomPadding} />
           </View>
-        )}
-        
-        {/* Bottom padding */}
-        <View className="h-32" />
+        </View>
       </ScrollView>
       
       {/* Employee Detail Modal */}
@@ -621,10 +612,10 @@ export const EmployeeManagementScreen: React.FC = () => {
         onRequestClose={() => setSelectedEmployee(null)}
       >
         {selectedEmployee && (
-          <View className="flex-1 bg-white">
-            <View className="p-6 border-b border-gray-200">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-2xl font-bold text-gray-900">Employee Details</Text>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalTitleContainer}>
+                <Text style={styles.modalTitle}>Employee Details</Text>
                 <Pressable 
                   onPress={() => {
                     setSelectedEmployee(null);
@@ -632,7 +623,7 @@ export const EmployeeManagementScreen: React.FC = () => {
                     setRewardPoints('');
                     setRewardReason('');
                   }} 
-                  className="p-2"
+                  style={styles.modalCloseButton}
                 >
                   <Ionicons name="close" size={24} color="#6B7280" />
                 </Pressable>
@@ -640,7 +631,7 @@ export const EmployeeManagementScreen: React.FC = () => {
             </View>
             
             <ScrollView 
-              className="flex-1 p-6"
+              style={styles.modalContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -649,108 +640,99 @@ export const EmployeeManagementScreen: React.FC = () => {
                 return (
                   <>
                     {/* Employee Header */}
-                    <View className="items-center mb-6">
-                      <View className="w-20 h-20 bg-blue-100 rounded-full items-center justify-center mb-4">
-                        <Text className="text-blue-600 font-bold text-2xl">
+                    <View style={styles.employeeHeaderModal}>
+                      <View style={styles.employeeAvatarModal}>
+                        <Text style={styles.employeeAvatarTextModal}>
                           {selectedEmployee.name.split(' ').map(n => n[0]).join('')}
                         </Text>
                       </View>
-                      <Text className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</Text>
-                      <Text className="text-gray-600 mt-1">{selectedEmployee.email}</Text>
-                      <Text className="text-gray-500 capitalize">{selectedEmployee.department}</Text>
+                      <Text style={styles.employeeNameModal}>{selectedEmployee.name}</Text>
+                      <Text style={styles.employeeEmailModal}>{selectedEmployee.email}</Text>
+                      <Text style={styles.employeeDepartmentModal}>{selectedEmployee.department}</Text>
                     </View>
                     
                     {/* Quick Stats */}
-                    <View className="bg-gray-50 rounded-xl p-4 mb-6">
-                      <View className="flex-row justify-between items-center mb-3">
-                        <Text className="text-gray-700">Total Points</Text>
-                        <Text className="font-bold text-2xl text-blue-600">{selectedEmployee.totalPoints}</Text>
+                    <View style={styles.quickStatsCard}>
+                      <View style={styles.quickStatsRow}>
+                        <Text style={styles.quickStatsLabel}>Total Points</Text>
+                        <Text style={styles.quickStatsValue}>{selectedEmployee.totalPoints}</Text>
                       </View>
-                      <View className="flex-row justify-between items-center mb-3">
-                        <Text className="text-gray-700">Current Streak</Text>
-                        <Text className="font-semibold text-orange-600">{selectedEmployee.currentStreak} days</Text>
+                      <View style={styles.quickStatsRow}>
+                        <Text style={styles.quickStatsLabel}>Current Streak</Text>
+                        <Text style={styles.quickStatsValue}>{selectedEmployee.currentStreak} days</Text>
                       </View>
-                      <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-gray-700">Total Check-ins</Text>
-                        <Text className="font-semibold text-green-600">{(selectedEmployee.checkIns || []).length}</Text>
+                      <View style={styles.quickStatsRow}>
+                        <Text style={styles.quickStatsLabel}>Total Check-ins</Text>
+                        <Text style={styles.quickStatsValue}>{(selectedEmployee.checkIns || []).length}</Text>
                       </View>
-                      <View className="flex-row justify-between items-center">
-                        <Text className="text-gray-700">Consistency Score</Text>
-                        <Text className={cn(
-                          "font-semibold",
-                          analysis.consistencyScore >= 80 ? "text-green-600" :
-                          analysis.consistencyScore >= 60 ? "text-yellow-600" : "text-red-600"
-                        )}>
+                      <View style={styles.quickStatsRow}>
+                        <Text style={styles.quickStatsLabel}>Consistency Score</Text>
+                        <Text style={[
+                          styles.quickStatsValue,
+                          analysis.consistencyScore >= 80 ? styles.highPerformance :
+                          analysis.consistencyScore >= 60 ? styles.mediumPerformance : styles.lowPerformance
+                        ]}>
                           {analysis.consistencyScore}%
                         </Text>
                       </View>
                     </View>
 
                     {/* Attendance Breakdown */}
-                    <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-                      <Text className="text-lg font-semibold text-gray-900 mb-4">Attendance Breakdown</Text>
-                      <View className="space-y-3">
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center">
-                            <View className="w-4 h-4 bg-green-500 rounded-full mr-3" />
-                            <Text className="text-gray-700">Early Arrivals</Text>
-                          </View>
-                          <Text className="font-semibold text-gray-900">{analysis.earlyDays}</Text>
+                    <View style={styles.attendanceBreakdownCard}>
+                      <Text style={styles.attendanceBreakdownTitle}>Attendance Breakdown</Text>
+                      <View style={styles.attendanceBreakdownStats}>
+                        <View style={styles.attendanceBreakdownStatItem}>
+                          <View style={styles.attendanceBreakdownStatIcon} />
+                          <Text style={styles.attendanceBreakdownStatLabel}>Early Arrivals</Text>
+                          <Text style={styles.attendanceBreakdownStatValue}>{analysis.earlyDays}</Text>
                         </View>
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center">
-                            <View className="w-4 h-4 bg-blue-500 rounded-full mr-3" />
-                            <Text className="text-gray-700">On Time</Text>
-                          </View>
-                          <Text className="font-semibold text-gray-900">{analysis.onTimeDays}</Text>
+                        <View style={styles.attendanceBreakdownStatItem}>
+                          <View style={styles.attendanceBreakdownStatIcon} />
+                          <Text style={styles.attendanceBreakdownStatLabel}>On Time</Text>
+                          <Text style={styles.attendanceBreakdownStatValue}>{analysis.onTimeDays}</Text>
                         </View>
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center">
-                            <View className="w-4 h-4 bg-red-500 rounded-full mr-3" />
-                            <Text className="text-gray-700">Late Arrivals</Text>
-                          </View>
-                          <Text className="font-semibold text-gray-900">{analysis.lateDays}</Text>
+                        <View style={styles.attendanceBreakdownStatItem}>
+                          <View style={styles.attendanceBreakdownStatIcon} />
+                          <Text style={styles.attendanceBreakdownStatLabel}>Late Arrivals</Text>
+                          <Text style={styles.attendanceBreakdownStatValue}>{analysis.lateDays}</Text>
                         </View>
                         {analysis.averageCheckInTime && (
-                          <View className="flex-row items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                            <Text className="text-gray-700">Average Check-in Time</Text>
-                            <Text className="font-semibold text-gray-900">{analysis.averageCheckInTime}</Text>
+                          <View style={styles.quickStatsRow}>
+                            <Text style={styles.quickStatsLabel}>Average Check-in Time</Text>
+                            <Text style={styles.quickStatsValue}>{analysis.averageCheckInTime}</Text>
                           </View>
                         )}
                       </View>
                     </View>
 
                     {/* Weekly Patterns */}
-                    <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-                      <Text className="text-lg font-semibold text-gray-900 mb-4">Weekly Patterns</Text>
-                      <View className="space-y-3">
+                    <View style={styles.weeklyPatternsCard}>
+                      <Text style={styles.weeklyPatternsTitle}>Weekly Patterns</Text>
+                      <View style={styles.weeklyPatternsStats}>
                         {Object.entries(analysis.weeklyPatterns).map(([day, pattern]) => {
                           const total = pattern.early + pattern.ontime + pattern.late;
                           if (total === 0) return null;
                           
                           return (
-                            <View key={day} className="space-y-2">
-                              <View className="flex-row justify-between items-center">
-                                <Text className="font-medium text-gray-900">{day}</Text>
-                                <Text className="text-sm text-gray-600">{total} check-ins</Text>
+                            <View key={day} style={styles.weeklyPatternItem}>
+                              <View style={styles.weeklyPatternHeader}>
+                                <Text style={styles.weeklyPatternDay}>{day}</Text>
+                                <Text style={styles.weeklyPatternTotal}>{total} check-ins</Text>
                               </View>
-                              <View className="flex-row h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <View style={styles.weeklyPatternBar}>
                                 {pattern.early > 0 && (
                                   <View 
-                                    className="bg-green-500"
-                                    style={{ flex: pattern.early }}
+                                    style={[styles.weeklyPatternBarSegment, { backgroundColor: '#10B981' }]}
                                   />
                                 )}
                                 {pattern.ontime > 0 && (
                                   <View 
-                                    className="bg-blue-500"
-                                    style={{ flex: pattern.ontime }}
+                                    style={[styles.weeklyPatternBarSegment, { backgroundColor: '#3B82F6' }]}
                                   />
                                 )}
                                 {pattern.late > 0 && (
                                   <View 
-                                    className="bg-red-500"
-                                    style={{ flex: pattern.late }}
+                                    style={[styles.weeklyPatternBarSegment, { backgroundColor: '#EF4444' }]}
                                   />
                                 )}
                               </View>
@@ -761,16 +743,16 @@ export const EmployeeManagementScreen: React.FC = () => {
                     </View>
 
                     {/* AI Insights */}
-                    <View className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-                      <View className="flex-row items-center mb-3">
+                    <View style={styles.aiInsightsCard}>
+                      <View style={styles.aiInsightsHeader}>
                         <Ionicons name="analytics" size={20} color="#3B82F6" />
-                        <Text className="text-lg font-semibold text-blue-900 ml-2">Employee Insights</Text>
+                        <Text style={styles.aiInsightsTitle}>Employee Insights</Text>
                       </View>
-                      <View className="space-y-2">
+                      <View style={styles.aiInsightsList}>
                         {analysis.insights.map((insight, index) => (
-                          <View key={index} className="flex-row items-start">
-                            <View className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3" />
-                            <Text className="text-blue-800 flex-1">{insight}</Text>
+                          <View key={index} style={styles.aiInsightsItem}>
+                            <View style={styles.aiInsightsBullet} />
+                            <Text style={styles.aiInsightsInsight}>{insight}</Text>
                           </View>
                         ))}
                       </View>
@@ -778,23 +760,23 @@ export const EmployeeManagementScreen: React.FC = () => {
 
                     {/* Bonus Points History */}
                     {selectedEmployee.bonusPoints && selectedEmployee.bonusPoints.length > 0 && (
-                      <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-                        <Text className="text-lg font-semibold text-gray-900 mb-4">Bonus Points History</Text>
-                        <View className="space-y-3">
+                      <View style={styles.bonusPointsHistoryCard}>
+                        <Text style={styles.bonusPointsHistoryTitle}>Bonus Points History</Text>
+                        <View style={styles.bonusPointsHistoryList}>
                           {selectedEmployee.bonusPoints.slice(-5).reverse().map((bonus, index) => (
-                            <View key={bonus.id} className="flex-row items-start justify-between p-3 bg-blue-50 rounded-lg">
-                              <View className="flex-1 mr-3">
-                                <Text className="text-gray-900 font-medium">
+                            <View key={bonus.id} style={styles.bonusPointsHistoryItem}>
+                              <View style={styles.bonusPointsHistoryContent}>
+                                <Text style={styles.bonusPointsHistoryDate}>
                                   {format(parseISO(bonus.timestamp), 'MMM d, yyyy • h:mm a')}
                                 </Text>
-                                <Text className="text-sm text-gray-600 mt-1">
+                                <Text style={styles.bonusPointsHistoryReason}>
                                   {bonus.reason}
                                 </Text>
-                                <Text className="text-xs text-gray-500 mt-1">
+                                <Text style={styles.bonusPointsHistoryAwardedBy}>
                                   Awarded by {bonus.awardedBy}
                                 </Text>
                               </View>
-                              <Text className="text-lg font-bold text-blue-600">
+                              <Text style={styles.bonusPointsHistoryPoints}>
                                 +{bonus.pointsAwarded}
                               </Text>
                             </View>
@@ -804,27 +786,20 @@ export const EmployeeManagementScreen: React.FC = () => {
                     )}
                     
                     {/* Action Buttons */}
-                    <View className="space-y-3 mb-8" style={{ zIndex: 10 }}>
+                    <View style={styles.actionButtonsContainer}>
                       <Pressable
                         onPress={() => setShowRewardModal(true)}
-                        className="bg-blue-600 py-4 rounded-xl"
-                        style={{ 
-                          shadowColor: '#000',
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.25,
-                          shadowRadius: 3.84,
-                          elevation: 5,
-                        }}
+                        style={styles.awardBonusButton}
                       >
-                        <Text className="text-white text-center font-semibold text-lg">Award Bonus Points</Text>
+                        <Text style={styles.awardBonusButtonText}>Award Bonus Points</Text>
                       </Pressable>
                       
                       {analysis.consistencyScore < 70 && (
                         <Pressable
                           onPress={() => Alert.alert('Improvement Plan', 'Consider scheduling a one-on-one meeting to discuss attendance patterns and provide support.')}
-                          className="bg-yellow-600 py-4 rounded-xl"
+                          style={styles.createImprovementPlanButton}
                         >
-                          <Text className="text-white text-center font-semibold text-lg">Create Improvement Plan</Text>
+                          <Text style={styles.createImprovementPlanButtonText}>Create Improvement Plan</Text>
                         </Pressable>
                       )}
                     </View>
@@ -844,65 +819,65 @@ export const EmployeeManagementScreen: React.FC = () => {
         statusBarTranslucent
         presentationStyle="overFullScreen"
       >
-        <View className="flex-1 bg-black/60 justify-center items-center px-6" style={{ zIndex: 9999 }}>
-          <View className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-xl font-bold text-gray-900">Award Bonus Points</Text>
+        <View style={styles.rewardModalOverlay}>
+          <View style={styles.rewardModalContent}>
+            <View style={styles.rewardModalHeader}>
+              <Text style={styles.rewardModalTitle}>Award Bonus Points</Text>
               <Pressable
                 onPress={() => setShowRewardModal(false)}
-                className="p-2"
+                style={styles.rewardModalCloseButton}
               >
                 <Ionicons name="close" size={24} color="#6B7280" />
               </Pressable>
             </View>
             
-            <View className="space-y-4">
-              <View>
-                <Text className="text-gray-700 font-medium mb-2">Points to Award</Text>
+            <View style={styles.rewardModalForm}>
+              <View style={styles.rewardModalField}>
+                <Text style={styles.rewardModalLabel}>Points to Award</Text>
                 <TextInput
                   value={rewardPoints}
                   onChangeText={setRewardPoints}
                   placeholder="Enter points (e.g., 10)"
                   keyboardType="numeric"
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900"
+                  style={styles.rewardModalInput}
                   placeholderTextColor="#9CA3AF"
                 />
               </View>
               
-              <View>
-                <Text className="text-gray-700 font-medium mb-2">Reason</Text>
+              <View style={styles.rewardModalField}>
+                <Text style={styles.rewardModalLabel}>Reason</Text>
                 <TextInput
                   value={rewardReason}
                   onChangeText={setRewardReason}
                   placeholder="e.g., Exceptional performance this week"
                   multiline
                   numberOfLines={3}
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900"
+                  style={styles.rewardModalInput}
                   placeholderTextColor="#9CA3AF"
                   textAlignVertical="top"
                 />
               </View>
               
               {selectedEmployee && (
-                <View className="bg-blue-50 p-3 rounded-xl">
-                  <Text className="text-blue-800 font-medium">Awarding to: {selectedEmployee.name}</Text>
-                  <Text className="text-blue-600 text-sm">Current Points: {selectedEmployee.totalPoints}</Text>
+                <View style={styles.rewardModalAwardingInfo}>
+                  <Text style={styles.rewardModalAwardingInfoTitle}>Awarding to: {selectedEmployee.name}</Text>
+                  <Text style={styles.rewardModalAwardingInfoPoints}>Current Points: {selectedEmployee.totalPoints}</Text>
                 </View>
               )}
             </View>
             
-            <View className="flex-row space-x-3 mt-6">
+            <View style={styles.rewardModalActions}>
               <Pressable
                 onPress={() => setShowRewardModal(false)}
-                className="flex-1 bg-gray-200 py-3 rounded-full"
+                style={styles.rewardModalCancelButton}
               >
-                <Text className="text-gray-800 text-center font-semibold">Cancel</Text>
+                <Text style={styles.rewardModalCancelButtonText}>Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={handleGiveReward}
-                className="flex-1 bg-blue-600 py-3 rounded-full"
+                style={styles.rewardModalAwardButton}
               >
-                <Text className="text-white text-center font-semibold">Award Points</Text>
+                <Text style={styles.rewardModalAwardButtonText}>Award Points</Text>
               </Pressable>
             </View>
           </View>
@@ -911,3 +886,700 @@ export const EmployeeManagementScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#18181b' },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  centered: { width: '100%', maxWidth: 800, alignItems: 'center' },
+  glassCard: { width: '100%', padding: 32, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 2, borderColor: '#b87333', shadowColor: '#b87333', shadowOpacity: 0.25, shadowRadius: 8, marginBottom: 24 },
+  heading: { fontSize: 32, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#b87333', fontFamily: 'UnifrakturCook' },
+  tabContainer: { marginBottom: 24 },
+  tabButtons: { flexDirection: 'row', paddingHorizontal: 10 },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    marginHorizontal: 5,
+  },
+  activeTabButton: {
+    backgroundColor: '#4f46e5',
+    borderColor: '#4f46e5',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginLeft: 8,
+  },
+  activeTabButtonText: {
+    color: 'white',
+  },
+  tabCountBadge: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  activeTabCountBadge: {
+    backgroundColor: 'white',
+  },
+  tabCountText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6b7280',
+  },
+  activeTabCountText: {
+    color: '#4f46e5',
+  },
+  sectionContainer: {
+    width: '100%',
+    paddingHorizontal: 10,
+    marginBottom: 24,
+  },
+  employeeCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  employeeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  employeeAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  employeeAvatarText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  employeeInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  employeeName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  employeeEmail: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  employeeDepartment: {
+    fontSize: 14,
+    color: '#4b5563',
+    marginTop: 2,
+  },
+  employeePoints: {
+    alignItems: 'flex-end',
+  },
+  employeeTotalPoints: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  employeePointsLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  employeeDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  employeeStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  employeeStatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  employeeStatLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginLeft: 8,
+  },
+  viewDetailsButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  viewDetailsButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  noPendingUsersContainer: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  noPendingUsersTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 15,
+  },
+  noPendingUsersSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 5,
+  },
+  analyticsCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  analyticsHeading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 15,
+  },
+  analyticsStats: {
+    flexDirection: 'column',
+  },
+  analyticsStatItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  analyticsStatLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  analyticsStatValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  highPerformance: {
+    color: '#10B981',
+  },
+  mediumPerformance: {
+    color: '#F59E0B',
+  },
+  lowPerformance: {
+    color: '#EF4444',
+  },
+  weeklyPatternsContainer: {
+    flexDirection: 'column',
+  },
+  weeklyPatternItem: {
+    marginBottom: 10,
+  },
+  weeklyPatternLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 5,
+  },
+  weeklyPatternValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  modalCloseButton: {
+    padding: 5,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 600,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 7,
+    elevation: 10,
+  },
+  employeeHeaderModal: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  employeeAvatarModal: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  employeeAvatarTextModal: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  employeeNameModal: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 2,
+  },
+  employeeEmailModal: {
+    fontSize: 15,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+  employeeDepartmentModal: {
+    fontSize: 15,
+    color: '#4b5563',
+    marginBottom: 2,
+  },
+  quickStatsCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  quickStatsLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  quickStatsValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  attendanceBreakdownCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  attendanceBreakdownTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 15,
+  },
+  attendanceBreakdownStats: {
+    flexDirection: 'column',
+  },
+  attendanceBreakdownStatItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  attendanceBreakdownStatIcon: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+    marginRight: 10,
+  },
+  attendanceBreakdownStatLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  attendanceBreakdownStatValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  weeklyPatternsCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  weeklyPatternsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 15,
+  },
+  weeklyPatternsStats: {
+    flexDirection: 'column',
+  },
+  weeklyPatternItem: {
+    marginBottom: 10,
+  },
+  weeklyPatternHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  weeklyPatternDay: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  weeklyPatternTotal: {
+    fontSize: 14,
+    color: '#3b82f6',
+    fontWeight: 'bold',
+  },
+  weeklyPatternBar: {
+    height: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  weeklyPatternBarSegment: {
+    height: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  aiInsightsCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  aiInsightsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  aiInsightsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginLeft: 10,
+  },
+  aiInsightsList: {
+    flexDirection: 'column',
+  },
+  aiInsightsItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  aiInsightsBullet: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#3B82F6',
+    marginTop: 5,
+    marginRight: 10,
+  },
+  aiInsightsInsight: {
+    fontSize: 14,
+    color: '#1f2937',
+    flex: 1,
+  },
+  bonusPointsHistoryCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  bonusPointsHistoryTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 15,
+  },
+  bonusPointsHistoryList: {
+    flexDirection: 'column',
+  },
+  bonusPointsHistoryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  bonusPointsHistoryContent: {
+    flex: 1,
+  },
+  bonusPointsHistoryDate: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+  bonusPointsHistoryReason: {
+    fontSize: 14,
+    color: '#1f2937',
+    marginBottom: 2,
+  },
+  bonusPointsHistoryAwardedBy: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  bonusPointsHistoryPoints: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  actionButtonsContainer: {
+    flexDirection: 'column',
+    marginTop: 20,
+  },
+  awardBonusButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 7,
+    elevation: 5,
+  },
+  awardBonusButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  createImprovementPlanButton: {
+    backgroundColor: '#F59E0B',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 7,
+    elevation: 5,
+    marginTop: 10,
+  },
+  createImprovementPlanButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rewardModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  rewardModalContent: {
+    width: '100%',
+    maxWidth: 500,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 7,
+    elevation: 10,
+  },
+  rewardModalHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  rewardModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  rewardModalCloseButton: {
+    padding: 5,
+  },
+  rewardModalForm: {
+    flexDirection: 'column',
+    marginBottom: 20,
+  },
+  rewardModalField: {
+    marginBottom: 15,
+  },
+  rewardModalLabel: {
+    fontSize: 14,
+    fontWeight: 'medium',
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  rewardModalInput: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: '#1f2937',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  rewardModalAwardingInfo: {
+    backgroundColor: '#e0f2fe',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+  },
+  rewardModalAwardingInfoTitle: {
+    fontSize: 15,
+    fontWeight: 'medium',
+    color: '#3b82f6',
+    marginBottom: 5,
+  },
+  rewardModalAwardingInfoPoints: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  rewardModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  rewardModalCancelButton: {
+    flex: 1,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  rewardModalCancelButtonText: {
+    color: '#6b7280',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rewardModalAwardButton: {
+    flex: 1,
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  rewardModalAwardButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  bottomPadding: {
+    height: 100,
+  },
+  employeeAppliedDate: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  employeeActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  rejectButton: {
+    flex: 1,
+    backgroundColor: '#fee2e2',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  rejectButtonText: {
+    color: '#ef4444',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  approveButton: {
+    flex: 1,
+    backgroundColor: '#10b981',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  approveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});

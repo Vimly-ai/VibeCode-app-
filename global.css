@@ -1,3 +1,73 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add steampunk font for headings */
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+
+.steampunk-heading {
+  font-family: 'UnifrakturCook', 'copperplate', serif;
+  letter-spacing: 1px;
+}
+
+/* Ensure .glass is visually consistent */
+.glass {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.25);
+  backdrop-filter: blur(14px) saturate(180%);
+  border: 2px solid rgba(176,141,87,0.25);
+}
+
+/* Steampunk accent colors */
+:root {
+  --steampunk-brass: #b08d57;
+  --steampunk-copper: #b87333;
+  --steampunk-leather: #4b2e05;
+  --steampunk-steel: #7c7c7c;
+}
+
+/* Steampunk badge styles */
+.steampunk-badge {
+  background: linear-gradient(135deg, #b08d57 0%, #b87333 100%);
+  border: 2px solid #7c5c2e;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px 0 rgba(75,46,5,0.18);
+  position: relative;
+  overflow: hidden;
+}
+.steampunk-badge.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(120deg, transparent 60%, rgba(255,255,255,0.3) 80%, transparent 100%);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Steampunk progress bar */
+.steampunk-progress {
+  background: #4b2e05;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #b08d57;
+  box-shadow: 0 1px 4px 0 rgba(176,141,87,0.18);
+}
+.steampunk-progress-fill {
+  background: linear-gradient(90deg, #b08d57 0%, #b87333 100%);
+  height: 100%;
+  border-radius: 12px 0 0 12px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Gear icon utility */
+.steampunk-gear {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background: url('https://cdn-icons-png.flaticon.com/512/616/616494.png') no-repeat center/contain;
+  filter: drop-shadow(0 1px 2px #7c5c2e);
+}

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import { useEmployeeStore } from './employeeStore';
 
 export interface User {
   id: string;
@@ -232,6 +233,15 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           savedCredentials: null
         });
+        try {
+          require('./employeeStore').useEmployeeStore.getState().clearStore();
+        } catch (e) {}
+        console.log('SIGN OUT CALLED: Auth and Employee state cleared');
+        if (typeof window !== 'undefined' && window.location && window.location.reload) {
+          window.location.reload();
+        } else if (typeof global !== 'undefined' && global.Expo && global.Expo.Updates && global.Expo.Updates.reloadAsync) {
+          global.Expo.Updates.reloadAsync();
+        }
       },
       
       forgotPassword: async (email: string) => {
