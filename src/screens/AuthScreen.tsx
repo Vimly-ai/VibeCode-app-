@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, Modal, StyleSheet, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useAuthStore } from '../state/authStore';
-import { cn } from '../utils/cn';
 
 export const AuthScreen: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,6 +20,23 @@ export const AuthScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signUp, signIn, forgotPassword, resetPassword, autoSignIn, savedCredentials } = useAuthStore();
+
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isMobile = windowWidth < 600;
+  const isTablet = windowWidth >= 600 && windowWidth < 1000;
+  const isDesktop = windowWidth >= 1000;
+
+  // Responsive style helpers
+  const cardMaxWidth = isMobile ? '100%' : isTablet ? 420 : 480;
+  const cardPadding = isMobile ? 8 : isTablet ? 16 : 20;
+  const headingFontSize = isMobile ? 20 : isTablet ? 24 : 28;
+  const subtitleFontSize = isMobile ? 12 : isTablet ? 14 : 16;
+  const sectionGap = isMobile ? 8 : isTablet ? 12 : 16;
+  const infoSectionFontSize = isMobile ? 11 : isTablet ? 12 : 13;
+  const infoSectionTitleSize = isMobile ? 13 : isTablet ? 14 : 16;
+  const demoButtonFontSize = isMobile ? 12 : isTablet ? 13 : 14;
+  const iconSize = isMobile ? 32 : isTablet ? 36 : 40;
+  const iconContainerSize = isMobile ? 40 : isTablet ? 48 : 56;
 
   // Auto-fill saved credentials
   React.useEffect(() => {
@@ -175,32 +191,46 @@ export const AuthScreen: React.FC = () => {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-6 pt-12">
-          {/* Header */}
-          <Animated.View entering={FadeInDown.delay(100)} className="items-center mb-12">
-            <View className="w-24 h-24 bg-blue-600 rounded-full items-center justify-center mb-6">
-              <Ionicons name="business" size={40} color="white" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#18181b', flex: 1 }]}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: isMobile ? 4 : 12, backgroundColor: '#18181b', maxHeight: windowHeight, minHeight: 0 }}>
+        <View style={{
+          width: '100%',
+          maxWidth: cardMaxWidth,
+          padding: cardPadding,
+          borderRadius: 20,
+          backgroundColor: 'rgba(255,255,255,0.13)',
+          borderWidth: 2,
+          borderColor: '#b87333',
+          boxShadow: isDesktop ? '0 4px 32px 0 #b8733311, 0 1px 0 #fff2' : '0 2px 12px #b8733308',
+          marginBottom: 0,
+          marginTop: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          flexShrink: 1,
+          minHeight: 0,
+        }}>
+          <View style={{ alignItems: 'center', marginBottom: sectionGap }}>
+            <View style={{ width: iconContainerSize, height: iconContainerSize, backgroundColor: '#2563eb', borderRadius: iconContainerSize / 2, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+              <Ionicons name="business" size={iconSize} color="white" />
             </View>
-            <Text className="text-3xl font-bold text-gray-900">
+            <Text style={{ fontSize: headingFontSize, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 2 }}>
               {isSignUp ? 'Join RewardSpace' : 'Welcome Back'}
             </Text>
-            <Text className="text-gray-600 text-center mt-2 text-lg">
-              {isSignUp 
+            <Text style={{ color: '#dbeafe', textAlign: 'center', fontSize: subtitleFontSize, marginBottom: 2 }}>
+              {isSignUp
                 ? 'Create your account to start earning rewards'
                 : 'Sign in to track your progress and earn rewards'
               }
             </Text>
-          </Animated.View>
-
+          </View>
           {/* Form */}
-          <Animated.View entering={FadeInDown.delay(200)} className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-            <View className="space-y-4">
+          <View style={{ backgroundColor: isMobile ? '#fff' : 'rgba(255,255,255,0.92)', borderRadius: 12, padding: cardPadding, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, marginBottom: sectionGap, flexShrink: 1, minHeight: 0 }}>
+            <View style={{ gap: 10 }}>
               {/* Email Input */}
-              <View>
-                <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
-                <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ color: '#374151', fontWeight: '500', marginBottom: 6 }}>Email Address</Text>
+                <View style={{ backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center' }}>
                   <Ionicons name="mail" size={20} color="#9CA3AF" />
                   <TextInput
                     value={email}
@@ -208,222 +238,220 @@ export const AuthScreen: React.FC = () => {
                     placeholder="your.email@example.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    className="flex-1 ml-3 text-gray-900"
+                    style={{ flex: 1, marginLeft: 12, color: '#111827' }}
                     placeholderTextColor="#9CA3AF"
                   />
                 </View>
               </View>
-
               {/* Name Input (Sign Up Only) */}
               {isSignUp && (
-                <View>
-                  <Text className="text-gray-700 font-medium mb-2">Full Name</Text>
-                  <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+                <View style={{ marginBottom: 10 }}>
+                  <Text style={{ color: '#374151', fontWeight: '500', marginBottom: 6 }}>Full Name</Text>
+                  <View style={{ backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="person" size={20} color="#9CA3AF" />
                     <TextInput
                       value={name}
                       onChangeText={setName}
                       placeholder="Enter your full name"
-                      className="flex-1 ml-3 text-gray-900"
+                      style={{ flex: 1, marginLeft: 12, color: '#111827' }}
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
                 </View>
               )}
-
               {/* Password Input */}
-              <View>
-                <Text className="text-gray-700 font-medium mb-2">Password</Text>
-                <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ color: '#374151', fontWeight: '500', marginBottom: 6 }}>Password</Text>
+                <View style={{ backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center' }}>
                   <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
                   <TextInput
                     value={password}
                     onChangeText={setPassword}
                     placeholder={isSignUp ? "Create a password (min 6 characters)" : "Enter your password"}
                     secureTextEntry={!showPassword}
-                    className="flex-1 ml-3 text-gray-900"
+                    style={{ flex: 1, marginLeft: 12, color: '#111827' }}
                     placeholderTextColor="#9CA3AF"
                   />
-                  <Pressable onPress={() => setShowPassword(!showPassword)} className="p-1">
-                    <Ionicons 
-                      name={showPassword ? "eye-off" : "eye"} 
-                      size={20} 
-                      color="#9CA3AF" 
+                  <Pressable onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#9CA3AF"
                     />
                   </Pressable>
                 </View>
               </View>
-
               {/* Confirm Password Input (Sign Up Only) */}
               {isSignUp && (
-                <View>
-                  <Text className="text-gray-700 font-medium mb-2">Confirm Password</Text>
-                  <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
+                <View style={{ marginBottom: 10 }}>
+                  <Text style={{ color: '#374151', fontWeight: '500', marginBottom: 6 }}>Confirm Password</Text>
+                  <View style={{ backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
                     <TextInput
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       placeholder="Confirm your password"
                       secureTextEntry={!showPassword}
-                      className="flex-1 ml-3 text-gray-900"
+                      style={{ flex: 1, marginLeft: 12, color: '#111827' }}
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
                 </View>
               )}
-
               {/* Remember Me (Sign In Only) */}
               {!isSignUp && (
                 <Pressable
                   onPress={() => setRememberMe(!rememberMe)}
-                  className="flex-row items-center"
+                  style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}
                 >
-                  <View className={cn(
-                    "w-5 h-5 rounded border-2 items-center justify-center mr-3",
-                    rememberMe ? "bg-blue-600 border-blue-600" : "border-gray-300"
-                  )}>
+                  <View style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: rememberMe ? '#2563eb' : '#d1d5db',
+                    backgroundColor: rememberMe ? '#2563eb' : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 8,
+                  }}>
                     {rememberMe && (
                       <Ionicons name="checkmark" size={14} color="white" />
                     )}
                   </View>
-                  <Text className="text-gray-700">Remember me</Text>
+                  <Text style={{ color: '#374151', fontSize: 14 }}>Remember me</Text>
                 </Pressable>
               )}
-            </View>
-
-            {/* Submit Button */}
-            <Pressable
-              onPress={handleSubmit}
-              disabled={loading}
-              className={cn(
-                "mt-6 rounded-xl p-4",
-                loading ? "bg-gray-400" : "bg-blue-600"
-              )}
-            >
-              <Text className="text-white font-semibold text-center text-lg">
-                {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-              </Text>
-            </Pressable>
-
-            {/* Forgot Password Link (Sign In Only) */}
-            {!isSignUp && (
+              {/* Submit Button */}
               <Pressable
-                onPress={() => setShowForgotPassword(true)}
-                className="mt-4"
+                onPress={handleSubmit}
+                disabled={loading}
+                style={{
+                  marginTop: 12,
+                  borderRadius: 16,
+                  padding: 14,
+                  alignItems: 'center',
+                  backgroundColor: loading ? '#9ca3af' : '#2563eb',
+                }}
               >
-                <Text className="text-blue-600 text-center">Forgot Password?</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
+                  {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+                </Text>
               </Pressable>
-            )}
-
-            {/* Toggle Sign Up/Sign In */}
-            <Pressable
-              onPress={() => setIsSignUp(!isSignUp)}
-              className="mt-4"
-            >
-              <Text className="text-blue-600 text-center">
-                {isSignUp 
-                  ? 'Already have an account? Sign In'
-                  : "Don't have an account? Sign Up"
-                }
-              </Text>
-            </Pressable>
-          </Animated.View>
-
+              {/* Forgot Password Link (Sign In Only) */}
+              {!isSignUp && (
+                <Pressable
+                  onPress={() => setShowForgotPassword(true)}
+                  style={{ marginTop: 10 }}
+                >
+                  <Text style={{ color: '#2563eb', textAlign: 'center' }}>Forgot Password?</Text>
+                </Pressable>
+              )}
+              {/* Toggle Sign Up/Sign In */}
+              <Pressable
+                onPress={() => setIsSignUp(!isSignUp)}
+                style={{ marginTop: 10 }}
+              >
+                <Text style={{ color: '#2563eb', textAlign: 'center' }}>
+                  {isSignUp
+                    ? 'Already have an account? Sign In'
+                    : "Don't have an account? Sign Up"
+                  }
+                </Text>
+              </Pressable>
+            </View>
+          </View>
           {/* Demo Login */}
-          <Animated.View entering={FadeInDown.delay(300)} className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-6">
-            <View className="items-center">
-              <Ionicons name="construct" size={24} color="#F59E0B" />
-              <Text className="text-yellow-800 font-semibold mt-2 mb-1">Demo Access</Text>
-              <Text className="text-yellow-700 text-sm text-center mb-4">
+          <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: cardPadding, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, marginBottom: sectionGap, flexShrink: 1, minHeight: 0 }}>
+            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+              <Ionicons name="construct" size={isMobile ? 20 : 24} color="#F59E0B" />
+              <Text style={{ color: '#111827', fontSize: infoSectionTitleSize, fontWeight: 'bold', marginTop: 6, marginBottom: 2 }}>Demo Access</Text>
+              <Text style={{ color: '#6b7280', fontSize: infoSectionFontSize, textAlign: 'center' }}>
                 Try the app with demo data
               </Text>
-              <View className="flex-row space-x-3">
-                <Pressable
-                  onPress={handleDemoLogin}
-                  disabled={loading}
-                  className="bg-yellow-600 px-4 py-3 rounded-full flex-1"
-                >
-                  <Text className="text-white font-semibold text-center">
-                    {loading ? 'Loading...' : 'Admin Login'}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleEmployeeLogin}
-                  disabled={loading}
-                  className="bg-blue-600 px-4 py-3 rounded-full flex-1"
-                >
-                  <Text className="text-white font-semibold text-center">
-                    {loading ? 'Loading...' : 'Employee Login'}
-                  </Text>
-                </Pressable>
-              </View>
             </View>
-          </Animated.View>
-
+            <View style={{ flexDirection: isMobile ? 'column' : 'row', gap: 8 }}>
+              <Pressable
+                onPress={handleDemoLogin}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  backgroundColor: loading ? '#9ca3af' : '#2563eb',
+                  marginBottom: isMobile ? 6 : 0,
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: demoButtonFontSize }}>
+                  {loading ? 'Loading...' : 'Admin Login'}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={handleEmployeeLogin}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  backgroundColor: loading ? '#9ca3af' : '#2563eb',
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: demoButtonFontSize }}>
+                  {loading ? 'Loading...' : 'Employee Login'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
           {/* Info Section */}
-          <Animated.View entering={FadeInDown.delay(400)} className="bg-white rounded-2xl p-6 shadow-sm">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
+          <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: cardPadding, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, marginBottom: 0, flexShrink: 1, minHeight: 0 }}>
+            <Text style={{ color: '#111827', fontSize: infoSectionTitleSize, fontWeight: 'bold', marginBottom: 10 }}>
               🔐 Secure Access
             </Text>
-            <View className="space-y-3">
-              <View className="flex-row items-start">
-                <Ionicons name="shield-checkmark" size={20} color="#10B981" />
-                <View className="flex-1 ml-3">
-                  <Text className="font-medium text-gray-900">Valid Email Required</Text>
-                  <Text className="text-gray-600 text-sm">
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="shield-checkmark" size={isMobile ? 16 : 20} color="#10B981" />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ color: '#111827', fontSize: infoSectionFontSize, fontWeight: 'bold' }}>Valid Email Required</Text>
+                  <Text style={{ color: '#6b7280', fontSize: isMobile ? 11 : 12 }}>
                     Use any valid email address to create your account
                   </Text>
                 </View>
               </View>
-
-              <View className="flex-row items-start">
-                <Ionicons name="person-add" size={20} color="#3B82F6" />
-                <View className="flex-1 ml-3">
-                  <Text className="font-medium text-gray-900">Admin Approval</Text>
-                  <Text className="text-gray-600 text-sm">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="person-add" size={isMobile ? 16 : 20} color="#3B82F6" />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ color: '#111827', fontSize: infoSectionFontSize, fontWeight: 'bold' }}>Admin Approval</Text>
+                  <Text style={{ color: '#6b7280', fontSize: isMobile ? 11 : 12 }}>
                     New accounts require administrator approval before access
                   </Text>
                 </View>
               </View>
-
-              <View className="flex-row items-start">
-                <Ionicons name="analytics" size={20} color="#8B5CF6" />
-                <View className="flex-1 ml-3">
-                  <Text className="font-medium text-gray-900">Track Progress</Text>
-                  <Text className="text-gray-600 text-sm">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="analytics" size={isMobile ? 16 : 20} color="#8B5CF6" />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ color: '#111827', fontSize: infoSectionFontSize, fontWeight: 'bold' }}>Track Progress</Text>
+                  <Text style={{ color: '#6b7280', fontSize: isMobile ? 11 : 12 }}>
                     Earn points, compete with colleagues, and redeem rewards
                   </Text>
                 </View>
               </View>
             </View>
-          </Animated.View>
-
-          {/* Demo Credentials Info */}
-          <Animated.View entering={FadeInDown.delay(500)} className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-            <Text className="text-blue-800 font-semibold mb-2">Demo Credentials:</Text>
-            <Text className="text-blue-700 text-sm">
-              • Admin: admin@demo.com / admin123{'\n'}
-              • Employee: sarah.johnson@gmail.com / demo123{'\n'}
-              • Employee: mike.chen@yahoo.com / demo123{'\n'}
-              • Employee: jane.smith@company.com / demo123
-            </Text>
-          </Animated.View>
-
-          {/* Bottom padding */}
-          <View className="h-20" />
+          </View>
         </View>
-      </ScrollView>
+      </View>
 
       {/* Forgot Password Modal */}
       <Modal visible={showForgotPassword} transparent animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center items-center px-6">
-          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Forgot Password</Text>
-            <Text className="text-gray-600 mb-4">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Forgot Password</Text>
+            <Text style={styles.modalSubtitle}>
               Enter your email address and we'll send you a reset code.
             </Text>
-            
-            <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center mb-6">
+
+            <View style={styles.modalInputGroup}>
               <Ionicons name="mail" size={20} color="#9CA3AF" />
               <TextInput
                 value={email}
@@ -431,27 +459,24 @@ export const AuthScreen: React.FC = () => {
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className="flex-1 ml-3 text-gray-900"
+                style={styles.modalInput}
                 placeholderTextColor="#9CA3AF"
               />
             </View>
-            
-            <View className="flex-row space-x-3">
+
+            <View style={styles.modalButtonGroup}>
               <Pressable
                 onPress={() => setShowForgotPassword(false)}
-                className="flex-1 bg-gray-200 py-3 rounded-full"
+                style={styles.modalCancelButton}
               >
-                <Text className="text-gray-800 text-center font-semibold">Cancel</Text>
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={handleForgotPassword}
                 disabled={loading}
-                className={cn(
-                  "flex-1 py-3 rounded-full",
-                  loading ? "bg-gray-400" : "bg-blue-600"
-                )}
+                style={[styles.modalSendCodeButton, loading ? styles.modalSendCodeButtonDisabled : styles.modalSendCodeButtonEnabled]}
               >
-                <Text className="text-white text-center font-semibold">
+                <Text style={styles.modalSendCodeButtonText}>
                   {loading ? 'Sending...' : 'Send Code'}
                 </Text>
               </Pressable>
@@ -462,54 +487,49 @@ export const AuthScreen: React.FC = () => {
 
       {/* Reset Password Modal */}
       <Modal visible={showResetPassword} transparent animationType="fade">
-        <View className="flex-1 bg-black/50 justify-center items-center px-6">
-          <View className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Reset Password</Text>
-            <Text className="text-gray-600 mb-4">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reset Password</Text>
+            <Text style={styles.modalSubtitle}>
               Enter the reset code and your new password.
             </Text>
-            
-            <View className="space-y-4 mb-6">
-              <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
-                <Ionicons name="key" size={20} color="#9CA3AF" />
-                <TextInput
-                  value={resetToken}
-                  onChangeText={setResetToken}
-                  placeholder="Enter reset code"
-                  className="flex-1 ml-3 text-gray-900"
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
-              
-              <View className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center">
-                <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
-                <TextInput
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder="New password (min 6 characters)"
-                  secureTextEntry={true}
-                  className="flex-1 ml-3 text-gray-900"
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
+
+            <View style={styles.modalInputGroup}>
+              <Ionicons name="key" size={20} color="#9CA3AF" />
+              <TextInput
+                value={resetToken}
+                onChangeText={setResetToken}
+                placeholder="Enter reset code"
+                style={styles.modalInput}
+                placeholderTextColor="#9CA3AF"
+              />
             </View>
-            
-            <View className="flex-row space-x-3">
+
+            <View style={styles.modalInputGroup}>
+              <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+              <TextInput
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="New password (min 6 characters)"
+                secureTextEntry={true}
+                style={styles.modalInput}
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+
+            <View style={styles.modalButtonGroup}>
               <Pressable
                 onPress={() => setShowResetPassword(false)}
-                className="flex-1 bg-gray-200 py-3 rounded-full"
+                style={styles.modalCancelButton}
               >
-                <Text className="text-gray-800 text-center font-semibold">Cancel</Text>
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
               </Pressable>
               <Pressable
                 onPress={handleResetPassword}
                 disabled={loading}
-                className={cn(
-                  "flex-1 py-3 rounded-full",
-                  loading ? "bg-gray-400" : "bg-blue-600"
-                )}
+                style={[styles.modalResetPasswordButton, loading ? styles.modalResetPasswordButtonDisabled : styles.modalResetPasswordButtonEnabled]}
               >
-                <Text className="text-white text-center font-semibold">
+                <Text style={styles.modalResetPasswordButtonText}>
                   {loading ? 'Resetting...' : 'Reset Password'}
                 </Text>
               </Pressable>
@@ -520,3 +540,130 @@ export const AuthScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'transparent' },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  glassCard: { width: '100%', maxWidth: 480, padding: 32, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 2, borderColor: '#b87333', shadowColor: '#b87333', shadowOpacity: 0.25, shadowRadius: 8, marginBottom: 16 },
+  heading: { fontSize: 28, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#b87333', fontFamily: 'copperplate', },
+  scrollView: { flex: 1 },
+  headerSection: { paddingHorizontal: 24, paddingTop: 48, paddingBottom: 24 },
+  headerAnimated: { alignItems: 'center', marginBottom: 48 },
+  headerIconContainer: { width: 96, height: 96, backgroundColor: '#2563eb', borderRadius: 48, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#111827', textAlign: 'center' },
+  headerSubtitle: { color: '#6b7280', textAlign: 'center', marginTop: 8, fontSize: 18 },
+  formCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, marginBottom: 24 },
+  formSection: { gap: 16 },
+  inputGroup: { marginBottom: 16 },
+  inputLabel: { color: '#374151', fontWeight: '500', marginBottom: 8 },
+  inputContainer: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 16, flexDirection: 'row', alignItems: 'center' },
+  input: { flex: 1, marginLeft: 12, color: '#111827' },
+  eyeButton: { padding: 4 },
+  submitButton: { marginTop: 24, borderRadius: 16, padding: 16, alignItems: 'center' },
+  submitButtonEnabled: { backgroundColor: '#2563eb' },
+  submitButtonDisabled: { backgroundColor: '#9ca3af' },
+  submitButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
+  linkButton: { marginTop: 16 },
+  linkText: { color: '#2563eb', textAlign: 'center' },
+  rememberMeCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  rememberMeChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  rememberMeUnchecked: {
+    borderColor: '#d1d5db',
+  },
+  rememberMeText: {
+    color: '#374151',
+    fontSize: 14,
+  },
+  demoLoginCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, marginBottom: 24 },
+  demoLoginHeader: { alignItems: 'center', marginBottom: 16 },
+  demoLoginTitle: { color: '#111827', fontSize: 18, fontWeight: 'semibold', marginTop: 8, marginBottom: 4 },
+  demoLoginSubtitle: { color: '#6b7280', fontSize: 14, textAlign: 'center' },
+  demoLoginButtons: { flexDirection: 'row', gap: 12 },
+  demoLoginButton: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  demoLoginButtonEnabled: { backgroundColor: '#2563eb' },
+  demoLoginButtonDisabled: { backgroundColor: '#9ca3af' },
+  demoLoginButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  infoSection: { backgroundColor: '#fff', borderRadius: 16, padding: 24, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, marginBottom: 24 },
+  infoSectionTitle: { color: '#111827', fontSize: 18, fontWeight: 'semibold', marginBottom: 16 },
+  infoSectionContent: { gap: 12 },
+  infoItem: { flexDirection: 'row', alignItems: 'center' },
+  infoItemTextContainer: { flex: 1, marginLeft: 12 },
+  infoItemTitle: { color: '#111827', fontSize: 14, fontWeight: 'medium' },
+  infoItemSubtitle: { color: '#6b7280', fontSize: 12 },
+  demoCredentialsCard: { backgroundColor: '#f0f9eb', borderRadius: 16, padding: 24, marginBottom: 24 },
+  demoCredentialsTitle: { color: '#22c55e', fontSize: 16, fontWeight: 'semibold', marginBottom: 8 },
+  demoCredentialsText: { color: '#16a34a', fontSize: 14 },
+  bottomPadding: { height: 80 },
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 350,
+  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#111827', marginBottom: 8 },
+  modalSubtitle: { color: '#6b7280', marginBottom: 24 },
+  modalInputGroup: {
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalInput: {
+    flex: 1,
+    marginLeft: 12,
+    color: '#111827',
+    fontSize: 14,
+  },
+  modalButtonGroup: { flexDirection: 'row', gap: 12 },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalCancelButtonText: { color: '#374151', fontWeight: 'semibold', fontSize: 16 },
+  modalSendCodeButton: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalSendCodeButtonEnabled: { backgroundColor: '#2563eb' },
+  modalSendCodeButtonDisabled: { backgroundColor: '#9ca3af' },
+  modalSendCodeButtonText: { color: '#fff', fontWeight: 'semibold', fontSize: 16 },
+  modalResetPasswordButton: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalResetPasswordButtonEnabled: { backgroundColor: '#2563eb' },
+  modalResetPasswordButtonDisabled: { backgroundColor: '#9ca3af' },
+  modalResetPasswordButtonText: { color: '#fff', fontWeight: 'semibold', fontSize: 16 },
+});
